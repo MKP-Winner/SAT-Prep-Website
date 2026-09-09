@@ -939,8 +939,8 @@ function renderPracticeTests() {
   $("#takenPracticeCount").textContent = "0";
   const savedPracticeScore = JSON.parse(localStorage.getItem("sat-scores") || '{"current":0}').current;
   $("#projectedPracticeScore").textContent = savedPracticeScore || "—";
-  $("#practiceList").innerHTML = tests.map((f, i) => `<div class="practice-row" data-practice-status="not-started"><span class="practice-number">${i + 1}</span><div><strong>Practice Test ${i + 1}</strong><small>98 questions · 2h 14m</small></div><button data-test-paper="${i}">Start test <span>→</span></button></div>`).join("");
-  $$("#practiceList button").forEach(b => b.addEventListener("click", () => startTest(Number(b.dataset.testPaper) + 1)));
+  $("#practiceList").innerHTML = tests.map((f, i) => `<div class="practice-row" data-practice-status="not-started"><span class="practice-number">${i + 1}</span><div><strong>Practice Test ${i + 1}</strong><small>98 questions · 2h 14m</small></div><div class="practice-actions"><button data-test-paper="${i}" data-test-mode="full">Full test <span>→</span></button><button class="section-test" data-test-paper="${i}" data-test-mode="reading">Reading & Writing</button><button class="section-test" data-test-paper="${i}" data-test-mode="math">Math</button></div></div>`).join("");
+  $$("#practiceList button").forEach(b => b.addEventListener("click", () => startTest(Number(b.dataset.testPaper) + 1, b.dataset.testMode)));
   $$(".practice-tab").forEach(tab => tab.addEventListener("click", () => {
     $$(".practice-tab").forEach(item => item.classList.toggle("selected", item === tab));
     const filter = tab.dataset.practiceFilter;
@@ -960,13 +960,15 @@ function renderLibrary() {
     return `<div class="library-group"><div class="library-group-heading"><div><span class="eyebrow">${group === "resources" ? "GENERAL RESOURCES" : subjectNames[group].toUpperCase()}</span><h2>${group === "resources" ? "Guides & reference" : subjectNames[group] + " materials"}</h2></div><span>${groupFiles.length} files</span></div><div class="library-group-items">${groupFiles.map(f => `<div class="library-item"><span class="file-icon">${f.ext === "pptx" ? "PPT" : f.ext === "docx" ? "DOC" : "PDF"}</span><div><strong title="${escapeHtml(f.name)}">${escapeHtml(f.name)}</strong><small>${escapeHtml(f.category)} · ${typeLabel[f.kind] || f.kind}</small></div><a target="_blank" href="${fileUrl(f.path)}">Open ↗</a></div>`).join("")}</div></div>`;
   }).join("") : `<p class="modal-lead">No materials match that search.</p>`;
 }
-function startTest(testNumber = 1) {
-  const modules = [
+function startTest(testNumber = 1, mode = "full") {
+  const allModules = [
     {name:"Reading & Writing · Module 1",subject:"reading",count:27,seconds:32 * 60},
     {name:"Reading & Writing · Module 2",subject:"reading",count:27,seconds:32 * 60},
     {name:"Math · Module 1",subject:"math",count:22,seconds:35 * 60},
     {name:"Math · Module 2",subject:"math",count:22,seconds:35 * 60}
   ];
+  const modules = mode === "reading" ? allModules.slice(0, 2) : mode === "math" ? allModules.slice(2) : allModules;
+  const sectionLabel = mode === "reading" ? "Reading & Writing" : mode === "math" ? "Math" : "Full Digital SAT";
   const cleanChoice = value => String(value)
     .replace(/(?:\s*\.\s*){3,}/g, " ")
     .replace(/[.…]{4,}/g, " ")
@@ -1002,12 +1004,14 @@ function startTest(testNumber = 1) {
   };
   const testQuestions = [take(pool("reading-writing"), 54, "reading-writing"), take(pool("math"), 44, "math")];
   let module = 0, question = 0, secondsLeft = modules[0].seconds, countdown;
-  const answers = Array.from({length:98}, () => null);
-  const globalIndex = () => (module < 2 ? module * 27 : 54 + (module - 2) * 22) + question;
+  const answers = Array.from({length: mode === "reading" ? 54 : mode === "math" ? 44 : 98}, () => null);
+  const globalIndex = () => mode === "math" ? question + (module * 22) : mode === "reading" ? question + (module * 27) : (module < 2 ? module * 27 : 54 + (module - 2) * 22) + question;
   const formatTime = value => `${String(Math.floor(value / 60)).padStart(2, "0")}:${String(value % 60).padStart(2, "0")}`;
   const score = () => {
-    const readingCorrect = answers.slice(0, 54).filter((answer, index) => answer === testQuestions[0][index].a).length;
-    const mathCorrect = answers.slice(54).filter((answer, index) => answer === testQuestions[1][index].a).length;
+    const readingAnswers = mode === "math" ? [] : mode === "reading" ? answers : answers.slice(0, 54);
+    const mathAnswers = mode === "math" ? answers : mode === "reading" ? [] : answers.slice(54);
+    const readingCorrect = readingAnswers.filter((answer, index) => answer === testQuestions[0][index].a).length;
+    const mathCorrect = mathAnswers.filter((answer, index) => answer === testQuestions[1][index].a).length;
     const sectionScore = correct => Math.round(200 + (correct / 54) * 600);
     const mathScore = correct => Math.round(200 + (correct / 44) * 600);
     return {readingCorrect, mathCorrect, readingScore:sectionScore(readingCorrect), mathScore:mathScore(mathCorrect)};
@@ -1015,7 +1019,10 @@ function startTest(testNumber = 1) {
   const finish = () => {
     clearInterval(countdown);
     const result = score();
-    $("#testModalContent").innerHTML = `<span class="eyebrow">TEST COMPLETE</span><h2>That’s a wrap.</h2><p class="modal-lead">You completed all 98 questions across the four timed modules.</p><div class="results-summary"><span class="eyebrow">SCORE CALCULATION</span><strong>${result.readingScore + result.mathScore}</strong><p>Reading & Writing: ${result.readingCorrect}/54 correct → ${result.readingScore}/800</p><p>Math: ${result.mathCorrect}/44 correct → ${result.mathScore}/800</p><p>Total: ${result.readingScore} + ${result.mathScore} = ${result.readingScore + result.mathScore}/1600</p></div><button class="primary-button" data-close style="margin-top:18px">Back to practice tests</button>`;
+    const isReading = mode === "reading", isMath = mode === "math";
+    const scoreTitle = isReading ? `${result.readingScore}/800` : isMath ? `${result.mathScore}/800` : `${result.readingScore + result.mathScore}/1600`;
+    const scoreDetails = isReading ? `<p>Reading & Writing: ${result.readingCorrect}/54 correct → ${result.readingScore}/800</p>` : isMath ? `<p>Math: ${result.mathCorrect}/44 correct → ${result.mathScore}/800</p>` : `<p>Reading & Writing: ${result.readingCorrect}/54 correct → ${result.readingScore}/800</p><p>Math: ${result.mathCorrect}/44 correct → ${result.mathScore}/800</p><p>Total: ${result.readingScore} + ${result.mathScore} = ${result.readingScore + result.mathScore}/1600</p>`;
+    $("#testModalContent").innerHTML = `<span class="eyebrow">TEST COMPLETE</span><h2>That’s a wrap.</h2><p class="modal-lead">You completed the ${sectionLabel} practice session.</p><div class="results-summary"><span class="eyebrow">SCORE CALCULATION</span><strong>${scoreTitle}</strong>${scoreDetails}</div><button class="primary-button" data-close style="margin-top:18px">Back to practice tests</button>`;
   };
   const showBreak = () => {
     clearInterval(countdown);
@@ -1024,10 +1031,10 @@ function startTest(testNumber = 1) {
     const breakTimer = setInterval(() => { breakSeconds--; const display = $("#breakCountdown"); if (display) display.textContent = formatTime(breakSeconds); if (breakSeconds <= 0) { clearInterval(breakTimer); $("#resumeTest").click(); } }, 1000);
     $("#resumeTest").addEventListener("click", () => { clearInterval(breakTimer); module = 2; question = 0; secondsLeft = modules[2].seconds; render(); });
   };
-  const next = () => { if (question < modules[module].count - 1) { question++; render(); } else if (module === 1) showBreak(); else if (module === 3) finish(); else { module++; question = 0; secondsLeft = modules[module].seconds; render(); } };
+  const next = () => { if (question < modules[module].count - 1) { question++; render(); } else if (mode === "full" && module === 1) showBreak(); else if (module === modules.length - 1) finish(); else { module++; question = 0; secondsLeft = modules[module].seconds; render(); } };
   const render = () => {
     clearInterval(countdown);
-    const current = modules[module], list = testQuestions[module < 2 ? 0 : 1], offset = module < 2 ? module * 27 : (module - 2) * 22, currentQuestion = list[offset + question];
+    const current = modules[module], mathModule = current.subject === "math", list = mathModule ? testQuestions[1] : testQuestions[0], offset = mathModule ? (mode === "math" ? module * 22 : (module - 2) * 22) : module * 27, currentQuestion = list[offset + question];
     if (!currentQuestion) {
       clearInterval(countdown);
       $("#testModalContent").innerHTML = `<span class="eyebrow">PRACTICE TEST</span><h2>Questions are unavailable.</h2><p class="modal-lead">The question files could not be loaded. Refresh the page and try again.</p><button class="primary-button" data-close>Close</button>`;
@@ -1035,7 +1042,9 @@ function startTest(testNumber = 1) {
       return;
     }
     const selected = answers[globalIndex()];
-    $("#testModalContent").innerHTML = `<span class="eyebrow">MODULE ${module + 1} OF 4 · QUESTION ${question + 1} OF ${current.count}</span><h2>${current.name}</h2><p class="modal-lead">${current.count} questions · ${formatTime(current.seconds)} total · approximately ${module < 2 ? "1:11" : "1:35"} per question</p><div class="test-progress"><i style="width:${((question + 1) / current.count) * 100}%"></i></div><div class="test-question"><span class="eyebrow">PRACTICE TEST QUESTION ${globalIndex() + 1}</span><p>${escapeHtml(currentQuestion.q)}</p><div class="answer-grid">${currentQuestion.o.map((option, index) => `<button class="${selected === index ? "selected" : ""}" data-answer="${index}">${String.fromCharCode(65 + index)}. ${escapeHtml(option)}</button>`).join("")}</div><button class="secondary-button calculator-button" data-desmos>Open Desmos calculator</button></div><div class="test-footer"><span class="modal-lead">Time remaining: <b id="testCountdown">${formatTime(secondsLeft)}</b></span><button class="primary-button" id="nextModule">${question === current.count - 1 ? (module === 3 ? "Finish test" : module === 1 ? "Take 10 min break" : "Continue") : "Next question"} <span>→</span></button></div>`;
+    const finalModule = module === modules.length - 1;
+    const finalButton = question === current.count - 1 ? (finalModule ? "Finish test" : mode === "full" && module === 1 ? "Take 10 min break" : "Continue") : "Next question";
+    $("#testModalContent").innerHTML = `<span class="eyebrow">MODULE ${module + 1} OF ${modules.length} · QUESTION ${question + 1} OF ${current.count}</span><h2>${current.name}</h2><p class="modal-lead">${current.count} questions · ${formatTime(current.seconds)} total · approximately ${current.subject === "reading" ? "1:11" : "1:35"} per question</p><div class="test-progress"><i style="width:${((question + 1) / current.count) * 100}%"></i></div><div class="test-question"><span class="eyebrow">PRACTICE TEST QUESTION ${globalIndex() + 1}</span><p>${escapeHtml(currentQuestion.q)}</p><div class="answer-grid">${currentQuestion.o.map((option, index) => `<button class="${selected === index ? "selected" : ""}" data-answer="${index}">${String.fromCharCode(65 + index)}. ${escapeHtml(option)}</button>`).join("")}</div><button class="secondary-button calculator-button" data-desmos>Open Desmos calculator</button></div><div class="test-footer"><span class="modal-lead">Time remaining: <b id="testCountdown">${formatTime(secondsLeft)}</b></span><button class="primary-button" id="nextModule">${finalButton} <span>→</span></button></div>`;
     openModal("testModal");
     $$(".answer-grid button").forEach(button => button.addEventListener("click", () => { answers[globalIndex()] = Number(button.dataset.answer); $$(".answer-grid button").forEach(item => item.classList.remove("selected")); button.classList.add("selected"); }));
     $("#nextModule").addEventListener("click", next);
