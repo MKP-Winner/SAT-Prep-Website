@@ -12,6 +12,11 @@
   <style>
     .answer-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
     .answer-grid button { min-width: 0; width: 100%; overflow-wrap: anywhere; word-break: break-word; }
+    .desmos-modal { max-width: 900px; }
+    .desmos-frame { width: 100%; height: 560px; border: 0; border-radius: 12px; background: #fff; }
+    .desmos-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
+    .calculator-button { margin-top: 12px; }
+    @media (max-width: 680px) { .desmos-frame { height: 70vh; } }
   </style>
 </head>
 <body>
@@ -103,6 +108,7 @@
   <div class="modal-backdrop" id="timerModal" aria-hidden="true"><div class="modal timer-modal"><button class="modal-close" data-close>×</button><span class="eyebrow">FOCUS TIMER</span><h2>Make this block count.</h2><div class="timer-display" id="timerDisplay">25:00</div><div class="timer-controls"><button class="secondary-button" id="timerReset">Reset</button><button class="primary-button" id="timerStart">Start timer</button></div></div></div>
   <div class="modal-backdrop" id="scoreModal" aria-hidden="true"><div class="modal score-modal"><button class="modal-close" data-close>×</button><span class="eyebrow">SCORE TARGETS</span><h2>Set your SAT targets.</h2><p class="modal-lead">Keep your latest score and target score up to date. SAT scores range from 400 to 1600.</p><div class="score-fields"><label>Current SAT score<input id="currentScoreInput" type="number" min="400" max="1600" step="10"></label><label>Goal SAT score<input id="goalScoreInput" type="number" min="400" max="1600" step="10"></label></div><p class="score-error" id="scoreError"></p><button class="primary-button" id="saveScores">Save score targets <span>→</span></button></div></div>
   <div class="modal-backdrop" id="testModal" aria-hidden="true"><div class="modal test-modal"><button class="modal-close" data-close>×</button><div id="testModalContent"></div></div></div>
+  <div class="modal-backdrop" id="desmosModal" aria-hidden="true"><div class="modal desmos-modal"><button class="modal-close" data-close>×</button><span class="eyebrow">DESMOS CALCULATOR</span><h2>Use Desmos without leaving practice.</h2><p class="modal-lead">Use the calculator for graphing, tables, equations, and checking your work. Your question remains open behind this panel.</p><iframe class="desmos-frame" title="Desmos Graphing Calculator" src="https://www.desmos.com/calculator?lang=en"></iframe><div class="desmos-actions"><a class="secondary-button" href="https://www.desmos.com/calculator?lang=en" target="_blank" rel="noopener">Open in new tab ↗</a><button class="primary-button" data-close>Return to question</button></div></div></div>
   <script src="materials.js"></script><script src="questions.js"></script><script src="practice-tests.js"></script><script src="app.js"></script>
 </body>
 </html>
