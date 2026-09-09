@@ -880,8 +880,9 @@ function openDesmos() { openModal("desmosModal"); }
 function setupDesmosWindow() {
   const windowElement = $("#desmosWindow");
   const handle = $("#desmosDragHandle");
+  const resizeHandle = $("#desmosResizeHandle");
   const backdrop = $("#desmosModal");
-  if (!windowElement || !handle || !backdrop) return;
+  if (!windowElement || !handle || !resizeHandle || !backdrop) return;
   let dragState = null;
   handle.addEventListener("pointerdown", event => {
     if (event.target.closest("button")) return;
@@ -900,6 +901,21 @@ function setupDesmosWindow() {
   const stopDragging = () => { dragState = null; };
   handle.addEventListener("pointerup", stopDragging);
   handle.addEventListener("pointercancel", stopDragging);
+  let resizeState = null;
+  resizeHandle.addEventListener("pointerdown", event => {
+    const rect = windowElement.getBoundingClientRect();
+    resizeState = {pointerId: event.pointerId, startX: event.clientX, startWidth: rect.width};
+    resizeHandle.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  });
+  resizeHandle.addEventListener("pointermove", event => {
+    if (!resizeState || event.pointerId !== resizeState.pointerId) return;
+    const width = Math.min(window.innerWidth - 24, Math.max(390, resizeState.startWidth - (event.clientX - resizeState.startX)));
+    windowElement.style.width = `${width}px`;
+  });
+  const stopResizing = () => { resizeState = null; };
+  resizeHandle.addEventListener("pointerup", stopResizing);
+  resizeHandle.addEventListener("pointercancel", stopResizing);
   backdrop.addEventListener("click", event => {
     if (event.target === backdrop) closeModals();
   });
