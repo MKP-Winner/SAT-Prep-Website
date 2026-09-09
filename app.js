@@ -1131,14 +1131,18 @@ function startTest(testNumber = 1, mode = "full") {
     const selected = answers[globalIndex()];
     const finalModule = module === modules.length - 1;
     const finalButton = question === current.count - 1 ? (finalModule ? "Finish test" : mode === "full" && module === 1 ? "Take 10 min break" : "Continue") : "Next question";
-    $("#testModalContent").innerHTML = `<span class="eyebrow">MODULE ${module + 1} OF ${modules.length} · QUESTION ${question + 1} OF ${current.count}</span><h2>${current.name}</h2><p class="modal-lead">${current.count} questions · ${formatTime(current.seconds)} total · approximately ${current.subject === "reading" ? "1:11" : "1:35"} per question</p><div class="test-progress"><i style="width:${((question + 1) / current.count) * 100}%"></i></div><div class="test-question"><span class="eyebrow">PRACTICE TEST QUESTION ${globalIndex() + 1}</span><p>${escapeHtml(currentQuestion.q)}</p><div class="answer-grid">${currentQuestion.o.map((option, index) => `<button class="${selected === index ? "selected" : ""}" data-answer="${index}">${String.fromCharCode(65 + index)}. ${escapeHtml(option)}</button>`).join("")}</div><button class="secondary-button calculator-button" data-desmos>Open Desmos calculator</button></div><div class="test-footer"><span class="modal-lead">Time remaining: <b id="testCountdown">${formatTime(secondsLeft)}</b></span><button class="primary-button" id="nextModule">${finalButton} <span>→</span></button></div>`;
+    $("#testModalContent").innerHTML = `<span class="eyebrow">MODULE ${module + 1} OF ${modules.length} · QUESTION ${question + 1} OF ${current.count}</span><h2>${current.name}</h2><p class="modal-lead">${current.count} questions · ${formatTime(current.seconds)} total · approximately ${current.subject === "reading" ? "1:11" : "1:35"} per question</p><div class="test-progress"><i style="width:${((question + 1) / current.count) * 100}%"></i></div><div class="test-question"><span class="eyebrow">PRACTICE TEST QUESTION ${globalIndex() + 1}</span><p>${escapeHtml(currentQuestion.q)}</p><div class="answer-grid">${currentQuestion.o.map((option, index) => `<button type="button" class="${selected === index ? "selected" : ""}" aria-pressed="${selected === index}" data-answer="${index}">${String.fromCharCode(65 + index)}. ${escapeHtml(option)}</button>`).join("")}</div><button class="secondary-button calculator-button" data-desmos>Open Desmos calculator</button></div><div class="test-footer"><span class="modal-lead">Time remaining: <b id="testCountdown">${formatTime(secondsLeft)}</b></span><button class="primary-button" id="nextModule">${finalButton} <span>→</span></button></div>`;
     openModal("testModal");
     $$(".answer-grid button").forEach(button => button.addEventListener("click", () => {
       const answerIndex = globalIndex();
       if (answers[answerIndex] === null) recordProgress({questions:1});
       answers[answerIndex] = Number(button.dataset.answer);
-      $$(".answer-grid button").forEach(item => item.classList.remove("selected"));
+      $$(".answer-grid button").forEach(item => {
+        item.classList.remove("selected");
+        item.setAttribute("aria-pressed", "false");
+      });
       button.classList.add("selected");
+      button.setAttribute("aria-pressed", "true");
     }));
     $("#nextModule").addEventListener("click", next);
     countdown = setInterval(() => {
