@@ -822,7 +822,10 @@ function renderLessons(filter = "all") {
 function openTopic(name) {
   const t = topics.find(x => x.name === name); if (!t) return;
   const questions = uniqueQuestions((window.SAT_EXTRACTED_QUESTIONS || []).filter(question => question.topic === name && !(name === "Algebra" && ["2937ef4f", "5a7ab8e8", "0393ba15", "cfe67646"].includes(question.id))).map(repairExtractedQuestion));
-  const practiceQuestions = questions.length ? questions : uniqueQuestions(questionBank[name] || []);
+  const correctedAdvancedMathQuestion = {q:"(x + 5) + (2x − 3)",o:["3x − 2","3x + 2","3x − 8","3x + 8"],a:1,e:"Combine like terms: x + 2x = 3x and 5 − 3 = 2, so the expression is 3x + 2. (Choice B.)",topic:"Advanced Math",difficulty:"Easy"};
+  const practiceQuestions = name === "Advanced Math"
+    ? [correctedAdvancedMathQuestion, ...questions.filter(item => questionKey(item) !== questionKey(correctedAdvancedMathQuestion))]
+    : questions.length ? questions : uniqueQuestions(questionBank[name] || []);
   $("#topicModalContent").innerHTML = `<span class="topic-kicker">${subjectNames[t.subject].toUpperCase()} / FOCUS TOPIC</span><h2>${escapeHtml(t.name)}</h2><p class="modal-lead">${escapeHtml(t.desc)} Learn the strategy, then answer the questions below without leaving the app.</p>
   <div class="study-box"><h3>Study notes · What to remember</h3><ul>${t.tips.map(x => `<li>${escapeHtml(x)}</li>`).join("")}</ul></div>
   <div class="practice-toolbar"><div><span class="eyebrow">IN-APP PRACTICE SET</span><strong>${practiceQuestions.length} questions · instant explanations</strong></div><div class="level-pills"><button class="selected" data-level="all">All</button><button data-level="Easy">Easy</button><button data-level="Medium">Medium</button><button data-level="Hard">Hard</button></div></div>
