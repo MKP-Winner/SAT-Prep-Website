@@ -789,16 +789,17 @@ function repairExtractedQuestion(item) {
 }
 
 const progressStorageKey = "sat-progress";
-const defaultProgress = {goals:{studyMinutes:300, questions:200}, days:{}};
+const defaultProgress = {goals:{studyMinutes:300, questions:200}, days:{}, adjustments:{}};
 let progressState = (() => {
   try {
     const saved = JSON.parse(localStorage.getItem(progressStorageKey) || "null");
-    return { ...defaultProgress, ...saved, goals:{...defaultProgress.goals, ...(saved?.goals || {})}, days:saved?.days || {} };
+    return { ...defaultProgress, ...saved, goals:{...defaultProgress.goals, ...(saved?.goals || {})}, days:saved?.days || {}, adjustments:saved?.adjustments || {} };
   } catch (error) {
     return {...defaultProgress};
   }
 })();
 let activeStudySession = null;
+let activityWeekOffset = 0;
 
 function localDateKey(date = new Date()) {
   return date.toISOString().slice(0, 10);
@@ -824,22 +825,30 @@ function stopStudySession() {
   activeStudySession = null;
   if (minutes > 0) recordProgress({minutes});
 }
-function weekProgress() {
+function weekProgress(offset = 0) {
   const days = Array.from({length:7}, (_, index) => {
     const date = new Date();
     date.setHours(12, 0, 0, 0);
-    date.setDate(date.getDate() - (6 - index));
+    date.setDate(date.getDate() - (6 - index) - (offset * 7));
     const key = localDateKey(date);
     return {key, label:new Intl.DateTimeFormat("en-US", {weekday:"short"}).format(date).slice(0, 1), ...(progressState.days[key] || {minutes:0, questions:0})};
   });
-  return {days, minutes:days.reduce((sum, day) => sum + day.minutes, 0), questions:days.reduce((sum, day) => sum + day.questions, 0)};
+  const periodKey = days[0].key;
+  const trackedQuestions = days.reduce((sum, day) => sum + day.questions, 0);
+  const adjustment = offset === 0 ? Number(progressState.adjustments[periodKey]?.questions || 0) : 0;
+  return {days, periodKey, minutes:days.reduce((sum, day) => sum + day.minutes, 0), questions:Math.max(0, trackedQuestions + adjustment), trackedQuestions};
 }
 function formatDuration(minutes) {
   const rounded = Math.max(0, Math.round(minutes));
   return rounded >= 60 ? `${Math.floor(rounded / 60)}h ${rounded % 60}m` : `${rounded}m`;
 }
+function formatWeekRange(days) {
+  const format = key => new Intl.DateTimeFormat("en-US", {month:"short", day:"numeric"}).format(new Date(`${key}T12:00:00`));
+  return `${format(days[0].key)}–${format(days[6].key)}`;
+}
 function updateProgressDashboard() {
   const summary = weekProgress();
+  const activitySummary = weekProgress(activityWeekOffset);
   const goals = progressState.goals;
   const studyValue = $("#studyTimeValue");
   if (!studyValue) return;
@@ -848,11 +857,14 @@ function updateProgressDashboard() {
   $("#studyTimeSummary").textContent = `Goal: ${formatDuration(goals.studyMinutes)} this week`;
   $("#questionsAnswered").textContent = summary.questions;
   $("#questionsGoalSummary").textContent = `Goal: ${goals.questions} this week`;
-  $("#activityTotal").textContent = formatDuration(summary.minutes);
-  const maxMinutes = Math.max(60, ...summary.days.map(day => day.minutes));
-  $("#activityBars").innerHTML = summary.days.map(day => `<i style="height:${Math.max(2, day.minutes / maxMinutes * 100)}%" title="${day.label}: ${day.minutes} minutes"></i>`).join("");
-  $("#activityDays").innerHTML = summary.days.map(day => `<span>${day.label}</span>`).join("");
+  $("#activityTotal").textContent = formatDuration(activitySummary.minutes);
+  $("#activityWeekLabel").textContent = activityWeekOffset === 0 ? `Current week · ${formatWeekRange(activitySummary.days)}` : formatWeekRange(activitySummary.days);
+  const maxMinutes = Math.max(60, ...activitySummary.days.map(day => day.minutes));
+  $("#activityBars").innerHTML = activitySummary.days.map(day => `<i style="height:${Math.max(2, day.minutes / maxMinutes * 100)}%" title="${day.label}: ${Math.round(day.minutes)} minutes"></i>`).join("");
+  $("#activityDays").innerHTML = activitySummary.days.map(day => `<span>${day.label}</span>`).join("");
   $("#questionBars").innerHTML = summary.days.map(day => `<i style="height:${Math.max(4, day.questions / Math.max(1, goals.questions / 7) * 100)}%"></i>`).join("");
+  $("#previousActivityWeek").disabled = false;
+  $("#nextActivityWeek").disabled = activityWeekOffset === 0;
 }
 
 function renderTopics(filter = "all") {
@@ -1201,22 +1213,31 @@ $("#saveScores").addEventListener("click", () => {
 $("#editGoals").addEventListener("click", () => {
   $("#studyGoalInput").value = progressState.goals.studyMinutes;
   $("#questionGoalInput").value = progressState.goals.questions;
+  $("#questionTotalInput").value = weekProgress().questions;
   $("#goalsError").textContent = "";
   openModal("goalsModal");
+});
+$("#editQuestionTotal").addEventListener("click", () => {
+  $("#editGoals").click();
 });
 $("#saveGoals").addEventListener("click", () => {
   const studyMinutes = Number($("#studyGoalInput").value);
   const questions = Number($("#questionGoalInput").value);
+  const questionTotal = Number($("#questionTotalInput").value);
   const error = $("#goalsError");
-  if (!Number.isInteger(studyMinutes) || studyMinutes < 1 || studyMinutes > 10080 || !Number.isInteger(questions) || questions < 1 || questions > 10000) {
-    error.textContent = "Enter positive whole-number goals within the listed limits.";
+  if (!Number.isInteger(studyMinutes) || studyMinutes < 1 || studyMinutes > 10080 || !Number.isInteger(questions) || questions < 1 || questions > 10000 || !Number.isInteger(questionTotal) || questionTotal < 0 || questionTotal > 100000) {
+    error.textContent = "Enter valid whole-number goals and a current total within the listed limits.";
     return;
   }
   progressState.goals = {studyMinutes, questions};
+  const currentWeek = weekProgress();
+  progressState.adjustments[currentWeek.periodKey] = {questions: questionTotal - currentWeek.trackedQuestions};
   saveProgress();
   updateProgressDashboard();
   closeModals();
 });
+$("#previousActivityWeek").addEventListener("click", () => { activityWeekOffset--; updateProgressDashboard(); });
+$("#nextActivityWeek").addEventListener("click", () => { if (activityWeekOffset < 0) { activityWeekOffset++; updateProgressDashboard(); } });
 $("#startTest").addEventListener("click", startTest); $("#librarySearch").addEventListener("input", renderLibrary); $("#libraryFilter").addEventListener("change", renderLibrary); $("#librarySubject").addEventListener("change", renderLibrary);
 setupDesmosWindow();
 $$(".lesson-filter").forEach(b => b.addEventListener("click", () => { $$(".lesson-filter").forEach(x => x.classList.remove("selected")); b.classList.add("selected"); renderLessons(b.dataset.lessonFilter); }));
