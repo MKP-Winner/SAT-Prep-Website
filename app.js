@@ -822,7 +822,7 @@ function renderLessons(filter = "all") {
 function openTopic(name) {
   const t = topics.find(x => x.name === name); if (!t) return;
   const questions = uniqueQuestions((window.SAT_EXTRACTED_QUESTIONS || []).filter(question => question.topic === name && !(name === "Algebra" && ["2937ef4f", "5a7ab8e8", "0393ba15", "cfe67646"].includes(question.id))).map(repairExtractedQuestion));
-  const correctedAdvancedMathQuestion = {q:"(x + 5) + (2x − 3)",o:["3x − 2","3x + 2","3x − 8","3x + 8"],a:1,e:"Combine like terms: x + 2x = 3x and 5 − 3 = 2, so the expression is 3x + 2. (Choice B.)",topic:"Advanced Math",difficulty:"Easy"};
+  const correctedAdvancedMathQuestion = {q:"(x + 5) + (2x − 3)\n\nWhich of the following is equivalent to the given expression?",o:["3x − 2","3x + 2","3x − 8","3x + 8"],a:1,e:"Combine like terms: x + 2x = 3x and 5 − 3 = 2, so the expression is 3x + 2. (Choice B.)",topic:"Advanced Math",difficulty:"Easy"};
   const practiceQuestions = name === "Advanced Math"
     ? [correctedAdvancedMathQuestion, ...questions.filter(item => questionKey(item) !== questionKey(correctedAdvancedMathQuestion))]
     : questions.length ? questions : uniqueQuestions(questionBank[name] || []);
