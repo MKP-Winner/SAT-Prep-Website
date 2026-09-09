@@ -1160,6 +1160,7 @@ const quoteStorageKey = "sat-zenquotes";
 const quoteCacheDuration = 60 * 60 * 1000;
 const fallbackQuote = {q:"Don’t study until you get it right. Study until you can’t get it wrong.",a:"Your future self"};
 let quoteState = {quotes:[fallbackQuote], index:0};
+let quoteRefreshCount = 0;
 function validQuotes(value) {
   return Array.isArray(value) && value.filter(item => item && typeof item.q === "string" && item.q.trim() && typeof item.a === "string").map(item => ({q:item.q.trim(),a:item.a.trim()}));
 }
@@ -1172,6 +1173,7 @@ function renderQuote() {
   $("#quoteAuthor").textContent = `— ${quote.a || "Unknown"}`;
 }
 function showNextQuote() {
+  quoteRefreshCount++;
   quoteState.index = (quoteState.index + 1) % quoteState.quotes.length;
   renderQuote();
   saveQuoteCache();
@@ -1193,7 +1195,7 @@ async function loadZenQuotes() {
     if (!response.ok) throw new Error(`ZenQuotes request failed with status ${response.status}.`);
     const quotes = validQuotes(await response.json());
     if (!quotes.length) throw new Error("ZenQuotes returned no usable quotes.");
-    quoteState = {quotes,index:0};
+    quoteState = {quotes,index:quoteRefreshCount % quotes.length};
     saveQuoteCache();
     renderQuote();
   } catch (error) {
@@ -1213,8 +1215,8 @@ $("#todayLabel").textContent = new Intl.DateTimeFormat("en-US",{month:"short",da
 renderTopics(); renderLessons(); renderPracticeTests(); renderLibrary(); updateTimer(); updateProgressDashboard();
 updateScores();
 renderQuote();
-loadZenQuotes();
 $("#quoteRefresh").addEventListener("click", showNextQuote);
+loadZenQuotes();
 $$(".nav-link").forEach(n => n.addEventListener("click", e => { e.preventDefault(); navigate(n.dataset.view); }));
 $$("[data-go]").forEach(b => b.addEventListener("click", () => navigate(b.dataset.go)));
 document.addEventListener("click", event => {
