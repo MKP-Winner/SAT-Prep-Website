@@ -877,6 +877,33 @@ function navigate(view) {
 function openModal(id) { const m = $(`#${id}`); m.classList.add("open"); m.setAttribute("aria-hidden","false"); }
 function closeModals() { $$(".modal-backdrop").forEach(m => { m.classList.remove("open"); m.setAttribute("aria-hidden","true"); }); }
 function openDesmos() { openModal("desmosModal"); }
+function setupDesmosWindow() {
+  const windowElement = $("#desmosWindow");
+  const handle = $("#desmosDragHandle");
+  const backdrop = $("#desmosModal");
+  if (!windowElement || !handle || !backdrop) return;
+  let dragState = null;
+  handle.addEventListener("pointerdown", event => {
+    if (event.target.closest("button")) return;
+    const rect = windowElement.getBoundingClientRect();
+    dragState = {pointerId: event.pointerId, offsetX: event.clientX - rect.left, offsetY: event.clientY - rect.top};
+    windowElement.classList.add("desmos-floating");
+    windowElement.setPointerCapture(event.pointerId);
+  });
+  handle.addEventListener("pointermove", event => {
+    if (!dragState || event.pointerId !== dragState.pointerId) return;
+    const maxX = Math.max(0, window.innerWidth - windowElement.offsetWidth);
+    const maxY = Math.max(0, window.innerHeight - windowElement.offsetHeight);
+    windowElement.style.left = `${Math.min(maxX, Math.max(0, event.clientX - dragState.offsetX))}px`;
+    windowElement.style.top = `${Math.min(maxY, Math.max(0, event.clientY - dragState.offsetY))}px`;
+  });
+  const stopDragging = () => { dragState = null; };
+  handle.addEventListener("pointerup", stopDragging);
+  handle.addEventListener("pointercancel", stopDragging);
+  backdrop.addEventListener("click", event => {
+    if (event.target === backdrop) closeModals();
+  });
+}
 function renderPracticeTests() {
   const tests = [];
   const seenTests = new Set();
@@ -1052,6 +1079,7 @@ $("#saveScores").addEventListener("click", () => {
   scoreState = {current, goal}; localStorage.setItem("sat-scores", JSON.stringify(scoreState)); updateScores(); closeModals();
 });
 $("#startTest").addEventListener("click", startTest); $("#librarySearch").addEventListener("input", renderLibrary); $("#libraryFilter").addEventListener("change", renderLibrary); $("#librarySubject").addEventListener("change", renderLibrary);
+setupDesmosWindow();
 $$(".lesson-filter").forEach(b => b.addEventListener("click", () => { $$(".lesson-filter").forEach(x => x.classList.remove("selected")); b.classList.add("selected"); renderLessons(b.dataset.lessonFilter); }));
 $$("[data-open-topic]").forEach(b => b.addEventListener("click", () => { navigate("learn"); setTimeout(() => openTopic(b.dataset.openTopic), 0); }));
 const initial = location.hash.replace("#",""); if (["learn","study","tests","library"].includes(initial)) navigate(initial);
