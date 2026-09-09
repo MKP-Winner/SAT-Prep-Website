@@ -788,6 +788,73 @@ function repairExtractedQuestion(item) {
   };
 }
 
+const progressStorageKey = "sat-progress";
+const defaultProgress = {goals:{studyMinutes:300, questions:200}, days:{}};
+let progressState = (() => {
+  try {
+    const saved = JSON.parse(localStorage.getItem(progressStorageKey) || "null");
+    return { ...defaultProgress, ...saved, goals:{...defaultProgress.goals, ...(saved?.goals || {})}, days:saved?.days || {} };
+  } catch (error) {
+    return {...defaultProgress};
+  }
+})();
+let activeStudySession = null;
+
+function localDateKey(date = new Date()) {
+  return date.toISOString().slice(0, 10);
+}
+function saveProgress() {
+  localStorage.setItem(progressStorageKey, JSON.stringify(progressState));
+}
+function recordProgress({minutes = 0, questions = 0} = {}) {
+  const key = localDateKey();
+  const day = progressState.days[key] || {minutes:0, questions:0};
+  day.minutes += Math.max(0, minutes);
+  day.questions += Math.max(0, questions);
+  progressState.days[key] = day;
+  saveProgress();
+  updateProgressDashboard();
+}
+function startStudySession(label) {
+  if (!activeStudySession) activeStudySession = {label, startedAt:Date.now()};
+}
+function stopStudySession() {
+  if (!activeStudySession) return;
+  const minutes = (Date.now() - activeStudySession.startedAt) / 60000;
+  activeStudySession = null;
+  if (minutes > 0) recordProgress({minutes});
+}
+function weekProgress() {
+  const days = Array.from({length:7}, (_, index) => {
+    const date = new Date();
+    date.setHours(12, 0, 0, 0);
+    date.setDate(date.getDate() - (6 - index));
+    const key = localDateKey(date);
+    return {key, label:new Intl.DateTimeFormat("en-US", {weekday:"short"}).format(date).slice(0, 1), ...(progressState.days[key] || {minutes:0, questions:0})};
+  });
+  return {days, minutes:days.reduce((sum, day) => sum + day.minutes, 0), questions:days.reduce((sum, day) => sum + day.questions, 0)};
+}
+function formatDuration(minutes) {
+  const rounded = Math.max(0, Math.round(minutes));
+  return rounded >= 60 ? `${Math.floor(rounded / 60)}h ${rounded % 60}m` : `${rounded}m`;
+}
+function updateProgressDashboard() {
+  const summary = weekProgress();
+  const goals = progressState.goals;
+  const studyValue = $("#studyTimeValue");
+  if (!studyValue) return;
+  studyValue.innerHTML = summary.minutes >= 60 ? `${Math.floor(summary.minutes / 60)}<span>h</span> ${summary.minutes % 60}<span>m</span>` : `${summary.minutes}<span>m</span>`;
+  $("#studyTimeProgress").style.width = `${Math.min(100, summary.minutes / goals.studyMinutes * 100)}%`;
+  $("#studyTimeSummary").textContent = `Goal: ${formatDuration(goals.studyMinutes)} this week`;
+  $("#questionsAnswered").textContent = summary.questions;
+  $("#questionsGoalSummary").textContent = `Goal: ${goals.questions} this week`;
+  $("#activityTotal").textContent = formatDuration(summary.minutes);
+  const maxMinutes = Math.max(60, ...summary.days.map(day => day.minutes));
+  $("#activityBars").innerHTML = summary.days.map(day => `<i style="height:${Math.max(2, day.minutes / maxMinutes * 100)}%" title="${day.label}: ${day.minutes} minutes"></i>`).join("");
+  $("#activityDays").innerHTML = summary.days.map(day => `<span>${day.label}</span>`).join("");
+  $("#questionBars").innerHTML = summary.days.map(day => `<i style="height:${Math.max(4, day.questions / Math.max(1, goals.questions / 7) * 100)}%"></i>`).join("");
+}
+
 function renderTopics(filter = "all") {
   $("#topicGrid").innerHTML = topics.map((t, i) => `<article class="topic-card ${filter !== "all" && t.subject !== filter ? "hidden" : ""}" data-topic="${escapeHtml(t.name)}" tabindex="0">
     <div class="topic-color" style="background:${t.color}"></div><span class="eyebrow">${subjectNames[t.subject].toUpperCase()}</span>
@@ -821,6 +888,7 @@ function renderLessons(filter = "all") {
 }
 function openTopic(name) {
   const t = topics.find(x => x.name === name); if (!t) return;
+  startStudySession(`Topic practice: ${name}`);
   const questions = uniqueQuestions((window.SAT_EXTRACTED_QUESTIONS || []).filter(question => question.topic === name && !(name === "Algebra" && ["2937ef4f", "5a7ab8e8", "0393ba15", "cfe67646"].includes(question.id))).map(repairExtractedQuestion));
   const correctedAdvancedMathQuestion = {q:"(x + 5) + (2x − 3)\n\nWhich of the following is equivalent to the given expression?",o:["3x − 2","3x + 2","3x − 8","3x + 8"],a:1,e:"Combine like terms: x + 2x = 3x and 5 − 3 = 2, so the expression is 3x + 2. (Choice B.)",topic:"Advanced Math",difficulty:"Easy"};
   const practiceQuestions = name === "Advanced Math"
@@ -844,12 +912,14 @@ function openTopic(name) {
       const response = $(`input[name="topic-${index}"]`, card);
       const value = response.value.trim();
       if (!value || (item.responseType === "integer" ? !/^-?\d+$/.test(value) : !/^-?\d+(?:\/\d+)?(?:\.\d+)?$/.test(value))) { result.className = "result-box incorrect-result"; result.innerHTML = `<b>Enter ${item.responseType === "integer" ? "an integer" : "a number or fraction"} first.</b> Then check your work.`; return; }
+      if (card.dataset.progressTracked !== "true") { card.dataset.progressTracked = "true"; recordProgress({questions:1}); }
       const normalize = input => { if (!input.includes("/")) return Number(input); const [numerator, denominator] = input.split("/").map(Number); return denominator ? numerator / denominator : NaN; };
       if (normalize(value) === normalize(String(item.answer))) { result.className = "result-box correct-result"; result.innerHTML = `<b>Correct — ${escapeHtml(value)}</b><p>${escapeHtml(item.e)}</p>`; button.textContent = "Answer checked"; }
       else { result.className = "result-box incorrect-result"; result.innerHTML = `<b>Not quite.</b><p>You entered <strong>${escapeHtml(value)}</strong>. The correct answer is <strong>${escapeHtml(item.answer)}</strong>.</p><p>${escapeHtml(item.e)}</p>`; button.textContent = "Try again"; }
       return;
     }
     if (!selected) { result.className = "result-box incorrect-result"; result.innerHTML = "<b>Choose an answer first.</b> Then check your work."; return; }
+    if (card.dataset.progressTracked !== "true") { card.dataset.progressTracked = "true"; recordProgress({questions:1}); }
     const selectedIndex = Number(selected.value);
     const correctLabel = `${String.fromCharCode(65 + item.a)}. ${item.o[item.a]}`;
     const selectedLabel = `${String.fromCharCode(65 + selectedIndex)}. ${item.o[selectedIndex]}`;
@@ -878,7 +948,7 @@ function navigate(view) {
   $(".sidebar").classList.remove("open");
 }
 function openModal(id) { const m = $(`#${id}`); m.classList.add("open"); m.setAttribute("aria-hidden","false"); }
-function closeModals() { $$(".modal-backdrop").forEach(m => { m.classList.remove("open"); m.setAttribute("aria-hidden","true"); }); }
+function closeModals() { stopStudySession(); $$(".modal-backdrop").forEach(m => { m.classList.remove("open"); m.setAttribute("aria-hidden","true"); }); }
 function openDesmos() { openModal("desmosModal"); }
 function setupDesmosWindow() {
   const windowElement = $("#desmosWindow");
@@ -964,6 +1034,7 @@ function renderLibrary() {
   }).join("") : `<p class="modal-lead">No materials match that search.</p>`;
 }
 function startTest(testNumber = 1, mode = "full") {
+  startStudySession(`${mode} practice test`);
   const allModules = [
     {name:"Reading & Writing · Module 1",subject:"reading",count:27,seconds:32 * 60},
     {name:"Reading & Writing · Module 2",subject:"reading",count:27,seconds:32 * 60},
@@ -1021,6 +1092,7 @@ function startTest(testNumber = 1, mode = "full") {
   };
   const finish = () => {
     clearInterval(countdown);
+    stopStudySession();
     const result = score();
     const isReading = mode === "reading", isMath = mode === "math";
     const scoreTitle = isReading ? `${result.readingScore}/800` : isMath ? `${result.mathScore}/800` : `${result.readingScore + result.mathScore}/1600`;
@@ -1049,7 +1121,13 @@ function startTest(testNumber = 1, mode = "full") {
     const finalButton = question === current.count - 1 ? (finalModule ? "Finish test" : mode === "full" && module === 1 ? "Take 10 min break" : "Continue") : "Next question";
     $("#testModalContent").innerHTML = `<span class="eyebrow">MODULE ${module + 1} OF ${modules.length} · QUESTION ${question + 1} OF ${current.count}</span><h2>${current.name}</h2><p class="modal-lead">${current.count} questions · ${formatTime(current.seconds)} total · approximately ${current.subject === "reading" ? "1:11" : "1:35"} per question</p><div class="test-progress"><i style="width:${((question + 1) / current.count) * 100}%"></i></div><div class="test-question"><span class="eyebrow">PRACTICE TEST QUESTION ${globalIndex() + 1}</span><p>${escapeHtml(currentQuestion.q)}</p><div class="answer-grid">${currentQuestion.o.map((option, index) => `<button class="${selected === index ? "selected" : ""}" data-answer="${index}">${String.fromCharCode(65 + index)}. ${escapeHtml(option)}</button>`).join("")}</div><button class="secondary-button calculator-button" data-desmos>Open Desmos calculator</button></div><div class="test-footer"><span class="modal-lead">Time remaining: <b id="testCountdown">${formatTime(secondsLeft)}</b></span><button class="primary-button" id="nextModule">${finalButton} <span>→</span></button></div>`;
     openModal("testModal");
-    $$(".answer-grid button").forEach(button => button.addEventListener("click", () => { answers[globalIndex()] = Number(button.dataset.answer); $$(".answer-grid button").forEach(item => item.classList.remove("selected")); button.classList.add("selected"); }));
+    $$(".answer-grid button").forEach(button => button.addEventListener("click", () => {
+      const answerIndex = globalIndex();
+      if (answers[answerIndex] === null) recordProgress({questions:1});
+      answers[answerIndex] = Number(button.dataset.answer);
+      $$(".answer-grid button").forEach(item => item.classList.remove("selected"));
+      button.classList.add("selected");
+    }));
     $("#nextModule").addEventListener("click", next);
     countdown = setInterval(() => {
       secondsLeft = Math.max(0, secondsLeft - 1);
@@ -1076,7 +1154,7 @@ function updateScores() {
   if ($("#testGoalValue")) $("#testGoalValue").textContent = `Goal: ${goal}`;
 }
 $("#todayLabel").textContent = new Intl.DateTimeFormat("en-US",{month:"short",day:"numeric",year:"numeric"}).format(new Date());
-renderTopics(); renderLessons(); renderPracticeTests(); renderLibrary(); updateTimer();
+renderTopics(); renderLessons(); renderPracticeTests(); renderLibrary(); updateTimer(); updateProgressDashboard();
 updateScores();
 $$(".nav-link").forEach(n => n.addEventListener("click", e => { e.preventDefault(); navigate(n.dataset.view); }));
 $$("[data-go]").forEach(b => b.addEventListener("click", () => navigate(b.dataset.go)));
@@ -1098,13 +1176,46 @@ document.addEventListener("click", e => { if (e.target.closest("[data-close]")) 
 $("#mobileMenu").addEventListener("click", () => $(".sidebar").classList.toggle("open"));
 $("#themeToggle").addEventListener("click", () => { document.body.classList.toggle("dark"); const dark = document.body.classList.contains("dark"); $("#themeLabel").textContent = dark ? "Light mode" : "Night mode"; $("#themeIcon").textContent = dark ? "☀" : "☾"; localStorage.setItem("sat-theme", dark ? "dark" : "light"); });
 if (localStorage.getItem("sat-theme") === "dark") $("#themeToggle").click();
-$("#openTimer").addEventListener("click", () => openModal("timerModal")); $("#timerStart").addEventListener("click", () => { if (timerInterval) { clearInterval(timerInterval); timerInterval = null; $("#timerStart").textContent = "Start timer"; } else { timerInterval = setInterval(() => { if (timerSeconds > 0) timerSeconds--; else clearInterval(timerInterval); updateTimer(); }, 1000); $("#timerStart").textContent = "Pause timer"; } }); $("#timerReset").addEventListener("click", () => { clearInterval(timerInterval); timerInterval = null; timerSeconds = 1500; updateTimer(); $("#timerStart").textContent = "Start timer"; });
+$("#openTimer").addEventListener("click", () => openModal("timerModal"));
+$("#timerStart").addEventListener("click", () => {
+  if (timerInterval) {
+    clearInterval(timerInterval); timerInterval = null; stopStudySession(); $("#timerStart").textContent = "Start timer";
+  } else {
+    startStudySession("Focus timer");
+    timerInterval = setInterval(() => {
+      if (timerSeconds > 0) timerSeconds--;
+      else { clearInterval(timerInterval); timerInterval = null; stopStudySession(); }
+      updateTimer();
+    }, 1000);
+    $("#timerStart").textContent = "Pause timer";
+  }
+});
+$("#timerReset").addEventListener("click", () => { clearInterval(timerInterval); timerInterval = null; stopStudySession(); timerSeconds = 1500; updateTimer(); $("#timerStart").textContent = "Start timer"; });
 $("#editScore").addEventListener("click", () => { $("#currentScoreInput").value = scoreState.current; $("#goalScoreInput").value = scoreState.goal; $("#scoreError").textContent = ""; openModal("scoreModal"); });
 $("#saveScores").addEventListener("click", () => {
   const current = Number($("#currentScoreInput").value), goal = Number($("#goalScoreInput").value), error = $("#scoreError");
   if (!Number.isInteger(current) || !Number.isInteger(goal) || current < 400 || current > 1600 || goal < 400 || goal > 1600 || current % 10 || goal % 10) { error.textContent = "Enter whole SAT scores from 400 to 1600 in 10-point increments."; return; }
   if (goal < current) { error.textContent = "Your goal should be at least your current score."; return; }
   scoreState = {current, goal}; localStorage.setItem("sat-scores", JSON.stringify(scoreState)); updateScores(); closeModals();
+});
+$("#editGoals").addEventListener("click", () => {
+  $("#studyGoalInput").value = progressState.goals.studyMinutes;
+  $("#questionGoalInput").value = progressState.goals.questions;
+  $("#goalsError").textContent = "";
+  openModal("goalsModal");
+});
+$("#saveGoals").addEventListener("click", () => {
+  const studyMinutes = Number($("#studyGoalInput").value);
+  const questions = Number($("#questionGoalInput").value);
+  const error = $("#goalsError");
+  if (!Number.isInteger(studyMinutes) || studyMinutes < 1 || studyMinutes > 10080 || !Number.isInteger(questions) || questions < 1 || questions > 10000) {
+    error.textContent = "Enter positive whole-number goals within the listed limits.";
+    return;
+  }
+  progressState.goals = {studyMinutes, questions};
+  saveProgress();
+  updateProgressDashboard();
+  closeModals();
 });
 $("#startTest").addEventListener("click", startTest); $("#librarySearch").addEventListener("input", renderLibrary); $("#libraryFilter").addEventListener("change", renderLibrary); $("#librarySubject").addEventListener("change", renderLibrary);
 setupDesmosWindow();
