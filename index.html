@@ -15,14 +15,14 @@
     .desmos-backdrop { align-items: stretch; justify-content: flex-end; background: transparent; pointer-events: none; padding: 0; }
     .desmos-modal { max-width: none; width: 52vw; height: 100vh; min-width: 390px; min-height: 360px; border-radius: 20px 0 0 20px; padding: 27px; pointer-events: auto; box-shadow: -18px 0 50px rgba(0,0,0,.22); }
     .desmos-modal.desmos-floating { position: fixed; margin: 0; }
-    .desmos-titlebar { display: flex; justify-content: space-between; align-items: center; cursor: grab; user-select: none; touch-action: none; margin: -8px 0 5px; padding: 9px 0; border-bottom: 1px solid var(--line); }
+    .desmos-titlebar { display: flex; justify-content: flex-end; align-items: center; cursor: grab; user-select: none; touch-action: none; margin: -8px 0 5px; padding: 0; min-height: 24px; }
     .desmos-titlebar:active { cursor: grabbing; }
     .desmos-titlebar .modal-close { position: static; }
-    .desmos-frame { display: block; width: 100%; height: calc(100% - 145px); min-height: 220px; border: 0; border-radius: 12px; background: #fff; }
+    .desmos-frame { display: block; width: 100%; height: calc(100% - 30px); min-height: 220px; border: 0; border-radius: 12px; background: #fff; }
     .desmos-edge-grip { position: absolute; left: -5px; top: 0; bottom: 0; width: 10px; cursor: ew-resize; }
     .desmos-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
     .calculator-button { margin-top: 12px; }
-    @media (max-width: 680px) { .desmos-modal { min-width: 0; width: 92vw; height: 100vh; } .desmos-frame { height: calc(100% - 175px); } }
+    @media (max-width: 680px) { .desmos-modal { min-width: 0; width: 92vw; height: 100vh; } .desmos-frame { height: calc(100% - 45px); } }
   </style>
 </head>
 <body>
@@ -114,7 +114,7 @@
   <div class="modal-backdrop" id="timerModal" aria-hidden="true"><div class="modal timer-modal"><button class="modal-close" data-close>×</button><span class="eyebrow">FOCUS TIMER</span><h2>Make this block count.</h2><div class="timer-display" id="timerDisplay">25:00</div><div class="timer-controls"><button class="secondary-button" id="timerReset">Reset</button><button class="primary-button" id="timerStart">Start timer</button></div></div></div>
   <div class="modal-backdrop" id="scoreModal" aria-hidden="true"><div class="modal score-modal"><button class="modal-close" data-close>×</button><span class="eyebrow">SCORE TARGETS</span><h2>Set your SAT targets.</h2><p class="modal-lead">Keep your latest score and target score up to date. SAT scores range from 400 to 1600.</p><div class="score-fields"><label>Current SAT score<input id="currentScoreInput" type="number" min="400" max="1600" step="10"></label><label>Goal SAT score<input id="goalScoreInput" type="number" min="400" max="1600" step="10"></label></div><p class="score-error" id="scoreError"></p><button class="primary-button" id="saveScores">Save score targets <span>→</span></button></div></div>
   <div class="modal-backdrop" id="testModal" aria-hidden="true"><div class="modal test-modal"><button class="modal-close" data-close>×</button><div id="testModalContent"></div></div></div>
-  <div class="modal-backdrop desmos-backdrop" id="desmosModal" aria-hidden="true"><div class="modal desmos-modal" id="desmosWindow"><span class="desmos-edge-grip" id="desmosResizeHandle" aria-label="Resize Desmos panel"></span><div class="desmos-titlebar" id="desmosDragHandle"><span class="eyebrow">DESMOS CALCULATOR · DRAG HEADER TO MOVE</span><button class="modal-close" data-close aria-label="Close Desmos">×</button></div><h2>Use Desmos beside your question.</h2><p class="modal-lead">The question stays visible. Drag the left edge to resize this panel.</p><iframe class="desmos-frame" title="Desmos Graphing Calculator" src="https://www.desmos.com/calculator?lang=en"></iframe><div class="desmos-actions"><a class="secondary-button" href="https://www.desmos.com/calculator?lang=en" target="_blank" rel="noopener">Open in new tab ↗</a><button class="primary-button" data-close>Return to question</button></div></div></div>
+  <div class="modal-backdrop desmos-backdrop" id="desmosModal" aria-hidden="true"><div class="modal desmos-modal" id="desmosWindow"><span class="desmos-edge-grip" id="desmosResizeHandle" aria-label="Resize Desmos panel"></span><div class="desmos-titlebar" id="desmosDragHandle"><button class="modal-close" data-close aria-label="Close Desmos">×</button></div><iframe class="desmos-frame" title="Desmos Graphing Calculator" src="https://www.desmos.com/calculator?lang=en"></iframe></div></div>
   <script src="materials.js"></script><script src="questions.js"></script><script src="practice-tests.js"></script><script src="app.js"></script>
 </body>
 </html>
