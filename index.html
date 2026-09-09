@@ -78,7 +78,15 @@
           <div class="panel today-panel"><div class="panel-heading"><div><span class="eyebrow">UP NEXT</span><h2>Today’s focus</h2></div><button class="text-button" data-go="learn">View plan →</button></div><div class="focus-list"><button class="focus-item" data-open-topic="Algebra"><span class="focus-icon math-icon">∑</span><span><strong>Algebra warm-up</strong><small>8 questions · Easy</small></span><span class="focus-status">Start <b>→</b></span></button><button class="focus-item" data-open-topic="Craft and Structure"><span class="focus-icon reading-icon">Aa</span><span><strong>Words in context</strong><small>10 questions · Medium</small></span><span class="focus-status">Start <b>→</b></span></button><button class="focus-item" data-open-topic="Standard English Conventions"><span class="focus-icon writing-icon">✎</span><span><strong>Grammar patterns</strong><small>12 questions · Hard</small></span><span class="focus-status">Start <b>→</b></span></button></div></div>
           <div class="panel activity-panel"><div class="panel-heading"><div><span class="eyebrow">YOUR WEEK</span><h2>Study activity</h2><span class="activity-week-label" id="activityWeekLabel"></span></div><div class="activity-heading-actions"><div class="activity-week-nav" aria-label="Study activity week navigation"><button class="week-arrow" id="previousActivityWeek" aria-label="View previous week">←</button><button class="week-arrow" id="nextActivityWeek" aria-label="View next week">→</button></div><span class="activity-total" id="activityTotal">0m</span><button class="text-button" id="editGoals">Set goals</button></div></div><div class="activity-chart"><div class="chart-y"><span>60m</span><span>45m</span><span>30m</span><span>15m</span><span>0</span></div><div class="chart-main"><div class="chart-grid"></div><div class="chart-bars" id="activityBars"></div></div></div><div class="chart-days" id="activityDays"></div></div>
         </div>
-        <div class="quote-strip"><span>“</span><p>Don’t study until you get it right. Study until you can’t get it wrong.</p><small>— Your future self</small></div>
+        <div class="quote-strip" aria-label="Daily motivation">
+          <span aria-hidden="true">“</span>
+          <div class="quote-content">
+            <p id="quoteText">Don’t study until you get it right. Study until you can’t get it wrong.</p>
+            <small id="quoteAuthor">— Your future self</small>
+            <a class="quote-attribution" href="https://zenquotes.io/" target="_blank" rel="noopener noreferrer">Quotes by ZenQuotes</a>
+          </div>
+          <button class="text-button quote-refresh" id="quoteRefresh" type="button" aria-label="Show another motivational quote">New quote <span aria-hidden="true">↻</span></button>
+        </div>
       </section>
 
       <section class="view" id="learnView">

@@ -1156,6 +1156,50 @@ function startTest(testNumber = 1, mode = "full") {
 let timerSeconds = 1500, timerInterval;
 function updateTimer() { $("#timerDisplay").textContent = `${String(Math.floor(timerSeconds/60)).padStart(2,"0")}:${String(timerSeconds%60).padStart(2,"0")}`; }
 let scoreState = JSON.parse(localStorage.getItem("sat-scores") || '{"current":1240,"goal":1400}');
+const quoteStorageKey = "sat-zenquotes";
+const quoteCacheDuration = 60 * 60 * 1000;
+const fallbackQuote = {q:"Don’t study until you get it right. Study until you can’t get it wrong.",a:"Your future self"};
+let quoteState = {quotes:[fallbackQuote], index:0};
+function validQuotes(value) {
+  return Array.isArray(value) && value.filter(item => item && typeof item.q === "string" && item.q.trim() && typeof item.a === "string").map(item => ({q:item.q.trim(),a:item.a.trim()}));
+}
+function saveQuoteCache() {
+  try { localStorage.setItem(quoteStorageKey, JSON.stringify({quotes:quoteState.quotes,index:quoteState.index,fetchedAt:Date.now()})); } catch (error) { console.warn("Unable to cache ZenQuotes locally.", error); }
+}
+function renderQuote() {
+  const quote = quoteState.quotes[quoteState.index] || fallbackQuote;
+  $("#quoteText").textContent = quote.q;
+  $("#quoteAuthor").textContent = `— ${quote.a || "Unknown"}`;
+}
+function showNextQuote() {
+  quoteState.index = (quoteState.index + 1) % quoteState.quotes.length;
+  renderQuote();
+  saveQuoteCache();
+}
+async function loadZenQuotes() {
+  let cached = null;
+  try { cached = JSON.parse(localStorage.getItem(quoteStorageKey) || "null"); } catch (error) { console.warn("Unable to read cached ZenQuotes.", error); }
+  const cachedQuotes = cached && validQuotes(cached.quotes);
+  if (cachedQuotes && cachedQuotes.length) {
+    quoteState = {quotes:cachedQuotes, index:Number.isInteger(cached.index) ? cached.index % cachedQuotes.length : 0};
+    renderQuote();
+  }
+  if (cachedQuotes && cachedQuotes.length && cached && cached.fetchedAt && Date.now() - cached.fetchedAt < quoteCacheDuration) return;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 8000);
+    const response = await fetch("https://zenquotes.io/api/quotes/", {headers:{Accept:"application/json"},signal:controller.signal});
+    clearTimeout(timeout);
+    if (!response.ok) throw new Error(`ZenQuotes request failed with status ${response.status}.`);
+    const quotes = validQuotes(await response.json());
+    if (!quotes.length) throw new Error("ZenQuotes returned no usable quotes.");
+    quoteState = {quotes,index:0};
+    saveQuoteCache();
+    renderQuote();
+  } catch (error) {
+    console.warn("ZenQuotes is unavailable; keeping the existing quote.", error);
+  }
+}
 function updateScores() {
   const current = Number(scoreState.current), goal = Number(scoreState.goal);
   $("#currentScoreValue").textContent = current;
@@ -1168,6 +1212,9 @@ function updateScores() {
 $("#todayLabel").textContent = new Intl.DateTimeFormat("en-US",{month:"short",day:"numeric",year:"numeric"}).format(new Date());
 renderTopics(); renderLessons(); renderPracticeTests(); renderLibrary(); updateTimer(); updateProgressDashboard();
 updateScores();
+renderQuote();
+loadZenQuotes();
+$("#quoteRefresh").addEventListener("click", showNextQuote);
 $$(".nav-link").forEach(n => n.addEventListener("click", e => { e.preventDefault(); navigate(n.dataset.view); }));
 $$("[data-go]").forEach(b => b.addEventListener("click", () => navigate(b.dataset.go)));
 document.addEventListener("click", event => {
