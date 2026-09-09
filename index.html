@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Northstar SAT Prep</title>
+  <meta name="description" content="A focused digital SAT study dashboard.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .answer-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .answer-grid button { min-width: 0; width: 100%; overflow-wrap: anywhere; word-break: break-word; }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <a class="brand" href="#dashboard" aria-label="Northstar SAT Prep home">
+        <span class="brand-mark">N</span>
+        <span><strong>Northstar</strong><small>SAT PREP STUDIO</small></span>
+      </a>
+      <nav class="main-nav" aria-label="Main navigation">
+        <a class="nav-link active" href="#dashboard" data-view="dashboard"><span>⌂</span>Dashboard</a>
+        <a class="nav-link" href="#learn" data-view="learn"><span>◈</span>Learn & practice</a>
+        <a class="nav-link" href="#study" data-view="study"><span>✦</span>Study guide</a>
+        <a class="nav-link" href="#tests" data-view="tests"><span>▣</span>Practice tests</a>
+        <a class="nav-link" href="#library" data-view="library"><span>▤</span>Resource library</a>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="streak-card">
+          <div class="streak-icon">✦</div>
+          <div><strong id="streakValue">3 day streak</strong><small>Keep your momentum</small></div>
+        </div>
+        <button class="settings-link" id="themeToggle"><span id="themeIcon">☾</span><span id="themeLabel">Night mode</span></button>
+        <p class="sidebar-note">Your materials stay on this device.</p>
+      </div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <button class="mobile-menu" id="mobileMenu" aria-label="Open navigation">☰</button>
+        <div class="breadcrumb"><span>Workspace</span><b>/</b><span id="breadcrumbCurrent">Dashboard</span></div>
+        <div class="top-actions"><span class="date-label" id="todayLabel"></span><button class="avatar">MP</button></div>
+      </header>
+
+      <section class="view active-view" id="dashboardView">
+        <div class="hero">
+          <div>
+            <span class="eyebrow">TUESDAY, SEPTEMBER 8</span>
+            <h1>Small steps.<br><em>Big score.</em></h1>
+            <p>Build your confidence one focused session at a time. You’re closer than you think.</p>
+            <button class="primary-button" data-go="learn">Continue learning <span>→</span></button>
+          </div>
+          <div class="hero-orbit" aria-hidden="true"><div class="orbit-ring"></div><div class="orbit-core">SAT<br><small>2026</small></div><span class="orbit-dot dot-one"></span><span class="orbit-dot dot-two"></span></div>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card"><span class="stat-label">STUDY TIME</span><strong>06<span>h</span> 42<span>m</span></strong><div class="progress-bar"><i style="width:68%"></i></div><small>+42m this week</small></div>
+          <div class="stat-card"><span class="stat-label">QUESTIONS ANSWERED</span><strong id="questionsAnswered">128</strong><div class="mini-bars"><i style="height:40%"></i><i style="height:65%"></i><i style="height:48%"></i><i style="height:78%"></i><i style="height:92%"></i><i style="height:72%"></i><i style="height:100%"></i></div><small>Goal: 200 this week</small></div>
+          <div class="stat-card score-card"><div class="score-heading"><span class="stat-label">EST. SCORE</span><button class="edit-score" id="editScore" aria-label="Edit SAT scores">Edit</button></div><strong id="currentScoreValue">1240</strong><span class="score-up" id="scoreGap">Goal: 1400</span><div class="score-line"><i id="scoreProgress"></i></div><small id="scoreSummary">160 points to your goal</small></div>
+        </div>
+        <div class="dashboard-columns">
+          <div class="panel today-panel"><div class="panel-heading"><div><span class="eyebrow">UP NEXT</span><h2>Today’s focus</h2></div><button class="text-button" data-go="learn">View plan →</button></div><div class="focus-list"><button class="focus-item" data-open-topic="Algebra"><span class="focus-icon math-icon">∑</span><span><strong>Algebra warm-up</strong><small>8 questions · Easy</small></span><span class="focus-status">Start <b>→</b></span></button><button class="focus-item" data-open-topic="Craft and Structure"><span class="focus-icon reading-icon">Aa</span><span><strong>Words in context</strong><small>10 questions · Medium</small></span><span class="focus-status">Start <b>→</b></span></button><button class="focus-item" data-open-topic="Standard English Conventions"><span class="focus-icon writing-icon">✎</span><span><strong>Grammar patterns</strong><small>12 questions · Hard</small></span><span class="focus-status">Start <b>→</b></span></button></div></div>
+          <div class="panel activity-panel"><div class="panel-heading"><div><span class="eyebrow">YOUR WEEK</span><h2>Study activity</h2></div><span class="activity-total">4h 26m</span></div><div class="activity-chart"><div class="chart-y"><span>60m</span><span>45m</span><span>30m</span><span>15m</span><span>0</span></div><div class="chart-main"><div class="chart-grid"></div><div class="chart-bars"><i style="height:42%" data-day="M"></i><i style="height:64%" data-day="T"></i><i style="height:28%" data-day="W"></i><i style="height:76%" data-day="T"></i><i style="height:48%" data-day="F"></i><i style="height:90%" data-day="S"></i><i style="height:34%" data-day="S"></i></div></div></div><div class="chart-days"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div></div>
+        </div>
+        <div class="quote-strip"><span>“</span><p>Don’t study until you get it right. Study until you can’t get it wrong.</p><small>— Your future self</small></div>
+      </section>
+
+      <section class="view" id="learnView">
+        <div class="section-intro"><div><span class="eyebrow">LEARN & PRACTICE</span><h1>Choose your arena.</h1><p>Study a concept, then put it into practice with materials from your SAT Prep collection.</p></div><button class="secondary-button" id="openTimer">⏱ Quick timer</button></div>
+        <div class="subject-tabs" role="tablist"><button type="button" class="subject-tab selected" data-subject="all">All subjects</button><button type="button" class="subject-tab" data-subject="math">Math <span>4</span></button><button type="button" class="subject-tab" data-subject="reading">Reading <span>2</span></button><button type="button" class="subject-tab" data-subject="writing">Writing <span>2</span></button></div>
+        <div class="topic-grid" id="topicGrid"></div>
+      </section>
+
+      <section class="view" id="studyView">
+        <div class="section-intro"><div><span class="eyebrow">CONCEPT LESSONS</span><h1>Learn it. See it. Use it.</h1><p>Topic-by-topic lessons built from the notes, worksheets, answer keys, guides, and textbooks in your SAT Prep folder.</p></div><button class="secondary-button" data-go="library">Browse sources →</button></div>
+        <div class="study-summary"><div><span class="study-summary-icon">✦</span><div><strong>How to use this guide</strong><p>Read the idea, follow the worked example, then open a practice set in Learn & practice.</p></div></div><span class="resource-count">8 guided lessons</span></div>
+        <div class="lesson-filters"><button class="lesson-filter selected" data-lesson-filter="all">All lessons</button><button class="lesson-filter" data-lesson-filter="math">Math</button><button class="lesson-filter" data-lesson-filter="reading">Reading</button><button class="lesson-filter" data-lesson-filter="writing">Writing</button></div>
+        <div id="lessonGrid" class="lesson-grid"></div>
+      </section>
+
+      <section class="view" id="testsView">
+        <div class="practice-heading"><div><h1>Practice tests</h1><p><b>Digital SAT</b><span>•</span>4 modules, 2h 14m<span>•</span><span id="practiceTakenSummary">0 of 11 taken</span></p></div></div>
+        <div class="practice-summary-grid">
+          <div class="practice-summary-card summary-best"><span>Best score</span><strong id="bestPracticeScore">—</strong><small>of 1,600</small></div>
+          <div class="practice-summary-card summary-projected"><span class="summary-icon">◎</span><strong id="projectedPracticeScore">—</strong><b>Projected</b><small>Based on your current score</small></div>
+          <div class="practice-summary-card summary-taken"><span class="summary-icon">✓</span><strong id="takenPracticeCount">0</strong><b>Taken</b><small>This month</small></div>
+        </div>
+        <div class="practice-toolbar"><div class="practice-tabs"><button class="practice-tab selected" data-practice-filter="all">All</button><button class="practice-tab" data-practice-filter="not-started">Not started</button><button class="practice-tab" data-practice-filter="taken">Taken</button></div><span>Pick a test to set your timing before the clock starts</span></div>
+        <div class="panel test-papers"><div class="panel-heading"><div><span class="eyebrow">YOUR COLLECTION</span><h2>11 practice papers</h2></div><button class="primary-button" id="startTest">Start full test <span>→</span></button></div><div id="practiceList" class="practice-list"></div></div>
+      </section>
+
+      <section class="view" id="libraryView">
+        <div class="section-intro"><div><span class="eyebrow">RESOURCE LIBRARY</span><h1>Everything in one place.</h1><p>Browse the complete SAT Prep folder: worksheets, answer keys, guides, slides, and practice papers.</p></div><div class="library-count"><strong id="libraryCount">0</strong><span>files indexed</span></div></div>
+        <div class="library-tools"><label class="search-box">⌕<input id="librarySearch" placeholder="Search your materials..." type="search"></label><select id="librarySubject"><option value="all">All subjects</option><option value="math">Math</option><option value="reading">Reading</option><option value="writing">Writing</option><option value="resources">General resources</option></select><select id="libraryFilter"><option value="all">All material types</option><option value="worksheet">Student worksheets</option><option value="answer">Answer keys</option><option value="guide">Guides & resources</option><option value="practice">Practice papers</option></select></div>
+        <div id="libraryList" class="library-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="topicModal" aria-hidden="true"><div class="modal topic-modal"><button class="modal-close" data-close>×</button><div id="topicModalContent"></div></div></div>
+  <div class="modal-backdrop" id="timerModal" aria-hidden="true"><div class="modal timer-modal"><button class="modal-close" data-close>×</button><span class="eyebrow">FOCUS TIMER</span><h2>Make this block count.</h2><div class="timer-display" id="timerDisplay">25:00</div><div class="timer-controls"><button class="secondary-button" id="timerReset">Reset</button><button class="primary-button" id="timerStart">Start timer</button></div></div></div>
+  <div class="modal-backdrop" id="scoreModal" aria-hidden="true"><div class="modal score-modal"><button class="modal-close" data-close>×</button><span class="eyebrow">SCORE TARGETS</span><h2>Set your SAT targets.</h2><p class="modal-lead">Keep your latest score and target score up to date. SAT scores range from 400 to 1600.</p><div class="score-fields"><label>Current SAT score<input id="currentScoreInput" type="number" min="400" max="1600" step="10"></label><label>Goal SAT score<input id="goalScoreInput" type="number" min="400" max="1600" step="10"></label></div><p class="score-error" id="scoreError"></p><button class="primary-button" id="saveScores">Save score targets <span>→</span></button></div></div>
+  <div class="modal-backdrop" id="testModal" aria-hidden="true"><div class="modal test-modal"><button class="modal-close" data-close>×</button><div id="testModalContent"></div></div></div>
+  <script src="materials.js"></script><script src="questions.js"></script><script src="practice-tests.js"></script><script src="app.js"></script>
+</body>
+</html>
