@@ -40,6 +40,7 @@
         <a class="nav-link" href="#learn" data-view="learn"><span>◈</span>Learn & practice</a>
         <a class="nav-link" href="#study" data-view="study"><span>✦</span>Study guide</a>
         <a class="nav-link" href="#tests" data-view="tests"><span>▣</span>Practice tests</a>
+        <a class="nav-link" href="#notebook" data-view="notebook"><span>▧</span>Mistake notebook</a>
         <a class="nav-link" href="#library" data-view="library"><span>▤</span>Resource library</a>
       </nav>
       <div class="sidebar-bottom">
@@ -113,6 +114,55 @@
         <div class="panel test-papers"><div class="panel-heading"><div><span class="eyebrow">YOUR COLLECTION</span><h2>11 practice papers</h2></div><button class="primary-button" id="startTest">Start full test <span>→</span></button></div><div id="practiceList" class="practice-list"></div></div>
       </section>
 
+      <section class="view" id="notebookView" aria-labelledby="notebookTitle">
+        <div class="section-intro"><div><span class="eyebrow">REVIEW & REMEMBER</span><h1 id="notebookTitle">Mistake notebook.</h1><p>Turn missed and skipped questions into focused reviews. Your notebook stays on this device.</p></div><a class="secondary-button notebook-test-link" href="#tests" data-go="tests">Practice a test →</a></div>
+        <p class="notebook-status" id="notebookStatus" role="status" aria-live="polite" hidden></p>
+        <div class="notebook-stats">
+          <div class="notebook-stat"><span class="stat-label">IN YOUR NOTEBOOK</span><strong id="notebookTotal">0</strong><small>Questions saved</small></div>
+          <div class="notebook-stat"><span class="stat-label">DUE TO REVIEW</span><strong id="notebookDueCount">0</strong><small>Ready for another look</small></div>
+          <div class="notebook-stat"><span class="stat-label">MASTERED</span><strong id="notebookMasteredCount">0</strong><small>Questions you’ve mastered</small></div>
+          <div class="notebook-stat"><span class="stat-label">REVIEWS COMPLETED</span><strong id="notebookReviewCount">0</strong><small>Spaced practice sessions</small></div>
+        </div>
+        <div class="notebook-tools">
+          <label class="search-box">⌕<input id="notebookSearch" type="search" placeholder="Search questions, answers, or topics..." aria-label="Search notebook"></label>
+          <label class="notebook-select-label">Subject
+            <select id="notebookSubjectFilter" aria-label="Filter notebook by subject"><option value="all">All subjects</option><option value="math">Math</option><option value="reading">Reading</option><option value="writing">Writing</option></select>
+          </label>
+          <label class="notebook-select-label">Status
+            <select id="notebookStatusFilter" aria-label="Filter notebook by status"><option value="all">All questions</option><option value="due">Due for review</option><option value="active">Not mastered</option><option value="mastered">Mastered</option></select>
+          </label>
+          <label class="notebook-tag-filter">Tag
+            <input id="notebookTagFilter" type="search" placeholder="Filter by tag..." aria-label="Filter notebook by tag">
+          </label>
+        </div>
+        <div class="panel notebook-queue-panel">
+          <div class="panel-heading"><div><span class="eyebrow">SPACED REPETITION</span><h2>Due review queue</h2></div><span class="notebook-queue-count" id="notebookQueueLabel">0 due</span></div>
+          <div class="notebook-card-list" id="notebookDueQueue"></div>
+        </div>
+        <div class="panel notebook-list-panel">
+          <div class="panel-heading"><div><span class="eyebrow">YOUR COLLECTION</span><h2>All notebook questions</h2></div><span class="notebook-queue-count" id="notebookFilteredCount">0 questions</span></div>
+          <div class="notebook-card-list" id="notebookCards"></div>
+        </div>
+        <details class="panel notebook-add-panel">
+          <summary>Add a question manually</summary>
+          <p class="modal-lead">Save a question from your own study session, with the answer and explanation you want to review.</p>
+          <form id="notebookAddForm" class="notebook-add-form">
+            <label>Question<textarea name="question" required maxlength="2000" rows="3"></textarea></label>
+            <div class="notebook-form-row">
+              <label>Subject<select name="subject" required><option value="math">Math</option><option value="reading">Reading</option><option value="writing">Writing</option></select></label>
+              <label>Topic<input name="topic" required maxlength="120"></label>
+            </div>
+            <div class="notebook-form-row">
+              <label>Your answer<textarea name="userAnswer" maxlength="500" rows="2"></textarea></label>
+              <label>Correct answer<textarea name="correctAnswer" required maxlength="500" rows="2"></textarea></label>
+            </div>
+            <label>Explanation<textarea name="explanation" maxlength="2000" rows="3"></textarea></label>
+            <label>Tags <span class="notebook-label-hint">comma-separated</span><input name="tags" maxlength="300" placeholder="e.g. fractions, equations"></label>
+            <button class="primary-button" type="submit">Save question <span>→</span></button>
+          </form>
+        </details>
+      </section>
+
       <section class="view" id="libraryView">
         <div class="section-intro"><div><span class="eyebrow">RESOURCE LIBRARY</span><h1>Everything in one place.</h1><p>Browse the complete SAT Prep folder: worksheets, answer keys, guides, slides, and practice papers.</p></div><div class="library-count"><strong id="libraryCount">0</strong><span>files indexed</span></div></div>
         <div class="library-tools"><label class="search-box">⌕<input id="librarySearch" placeholder="Search your materials..." type="search"></label><select id="librarySubject"><option value="all">All subjects</option><option value="math">Math</option><option value="reading">Reading</option><option value="writing">Writing</option><option value="resources">General resources</option></select><select id="libraryFilter"><option value="all">All material types</option><option value="worksheet">Student worksheets</option><option value="answer">Answer keys</option><option value="guide">Guides & resources</option><option value="practice">Practice papers</option></select></div>
@@ -127,6 +177,6 @@
   <div class="modal-backdrop" id="goalsModal" aria-hidden="true"><div class="modal goals-modal"><button class="modal-close" data-close>×</button><span class="eyebrow">WEEKLY TARGETS</span><h2>Set your study goals.</h2><p class="modal-lead">Goals change your targets only. Activity is tracked automatically from practice, timed tests, and the focus timer.</p><div class="score-fields"><label>Study minutes goal<input id="studyGoalInput" type="number" min="1" max="10080" step="5"></label><label>Questions goal<input id="questionGoalInput" type="number" min="1" max="10000" step="10"></label></div><div class="goal-adjustment"><strong>Adjust this week’s answered total</strong><p>Use this only to correct a missed or imported total. New answers will continue adding to it automatically.</p><label>Current answered total<input id="questionTotalInput" type="number" min="0" max="100000" step="1"></label></div><p class="score-error" id="goalsError"></p><button class="primary-button" id="saveGoals">Save goals and total <span>→</span></button></div></div>
   <div class="modal-backdrop" id="testModal" aria-hidden="true"><div class="modal test-modal"><button class="modal-close" data-close>×</button><div id="testModalContent"></div></div></div>
   <div class="modal-backdrop desmos-backdrop" id="desmosModal" aria-hidden="true"><div class="modal desmos-modal" id="desmosWindow"><span class="desmos-edge-grip" id="desmosResizeHandle" aria-label="Resize Desmos panel"></span><div class="desmos-titlebar" id="desmosDragHandle"><button class="modal-close" data-close aria-label="Close Desmos">×</button></div><iframe class="desmos-frame" title="Desmos Graphing Calculator" src="https://www.desmos.com/calculator?lang=en"></iframe></div></div>
-  <script src="materials.js"></script><script src="questions.js"></script><script src="practice-tests.js"></script><script src="app.js"></script>
+  <script src="materials.js"></script><script src="questions.js"></script><script src="practice-tests.js"></script><script src="mistake-notebook.js"></script><script src="app.js"></script>
 </body>
 </html>
