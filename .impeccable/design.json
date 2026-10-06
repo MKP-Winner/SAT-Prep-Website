@@ -1,0 +1,104 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-06T02:40:00Z",
+  "title": "Design System: FoodCycle NC",
+  "extensions": {
+    "colorMeta": {
+      "forest": { "role": "primary", "displayName": "Forest", "canonical": "#173e32", "tonalRamp": ["#102a22", "#173e32", "#24513f", "#36704e", "#5b8958", "#94ad76", "#c8d4b1", "#eef2e4"] },
+      "forest-deep": { "role": "primary", "displayName": "Forest Deep", "canonical": "#12352b", "tonalRamp": ["#0a2019", "#12352b", "#1c4737", "#286149", "#3d7a59", "#67946e", "#a9c4a6", "#edf4ed"] },
+      "leaf": { "role": "secondary", "displayName": "Leaf", "canonical": "#426e51", "tonalRamp": ["#1f3c2b", "#2f513a", "#426e51", "#5c8568", "#87a98f", "#b7cab8", "#d7e3d7", "#f1f5ee"] },
+      "moss": { "role": "secondary", "displayName": "Moss", "canonical": "#78905f", "tonalRamp": ["#354427", "#4c6037", "#647a49", "#78905f", "#95a878", "#b5c492", "#d7dfbf", "#f2f4e7"] },
+      "citrus": { "role": "tertiary", "displayName": "Harvest Citrus", "canonical": "#f1c75b", "tonalRamp": ["#705116", "#94701f", "#ba902e", "#d7ad43", "#f1c75b", "#f6d883", "#fae7b1", "#fdf4d8"] },
+      "tomato": { "role": "tertiary", "displayName": "Tomato", "canonical": "#df7656", "tonalRamp": ["#793d2a", "#9f4f37", "#bf6245", "#d76d4e", "#df7656", "#e99d83", "#f1c4b2", "#f9e6de"] },
+      "paper": { "role": "neutral", "displayName": "Field Paper", "canonical": "#f5f7f1", "tonalRamp": ["#353e35", "#55604f", "#707c68", "#939e89", "#bcc6b2", "#dce2d4", "#f5f7f1", "#fafbf7"] },
+      "white": { "role": "neutral", "displayName": "Harvest White", "canonical": "#fffefa", "tonalRamp": ["#353c34", "#566055", "#788071", "#a3a999", "#ccd0c7", "#e5e7e0", "#fffefa", "#ffffff"] },
+      "line": { "role": "neutral", "displayName": "Ledger Rule", "canonical": "#e5e9de", "tonalRamp": ["#37433a", "#596656", "#7d8877", "#a6aea1", "#c9cfc3", "#e5e9de", "#f0f2ec", "#fafbf8"] },
+      "muted": { "role": "neutral", "displayName": "Garden Muted", "canonical": "#6a786c", "tonalRamp": ["#293d30", "#3f5544", "#536a57", "#6a786c", "#899589", "#adb7ab", "#d0d6cd", "#eef0ec"] },
+      "ink": { "role": "neutral", "displayName": "Garden Ink", "canonical": "#24352b", "tonalRamp": ["#0d1b12", "#18271d", "#24352b", "#435147", "#647166", "#879387", "#b4bdb2", "#e6ebe4"] },
+      "soft-green": { "role": "neutral", "displayName": "Soft Green", "canonical": "#eaf0e3", "tonalRamp": ["#314331", "#495d42", "#657951", "#8da07d", "#aec0a1", "#cfdbc5", "#eaf0e3", "#f6f8f2"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Primary workspace and board headings." },
+      "title": { "displayName": "Section title", "purpose": "Section and dialog headings." },
+      "body": { "displayName": "Body", "purpose": "Introductory and explanatory copy." },
+      "label": { "displayName": "Compact label", "purpose": "Location, status, and compact metadata." }
+    },
+    "shadows": [
+      { "name": "dialog", "value": "0 18px 46px rgb(33 56 39 / 12%)", "purpose": "Lift the modal above a darkened backdrop." }
+    ],
+    "motion": [
+      { "name": "row-reveal", "value": "0.38s cubic-bezier(.16, 1, .3, 1)", "purpose": "One subtle arrival for the first inventory rows." },
+      { "name": "control-hover", "value": "0.16s ease", "purpose": "Small lift and color shift on interactive controls." }
+    ],
+    "breakpoints": [
+      { "name": "mobile", "value": "640px" },
+      { "name": "tablet", "value": "850px" },
+      { "name": "wide", "value": "1120px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "High-priority pantry and community action.",
+      "html": "<button class=\"ds-primary\">Add pantry item <span aria-hidden=\"true\">→</span></button>",
+      "css": ".ds-primary { display: inline-flex; min-height: 39px; align-items: center; justify-content: center; gap: 7px; padding: 0 14px; border: 1px solid transparent; border-radius: 5px; background: var(--forest, #173e32); color: #fffefa; font: 750 10px/1.4 'Segoe UI', sans-serif; cursor: pointer; transition: transform .16s ease, background .16s ease, box-shadow .16s ease; } .ds-primary span { color: #f1c75b; font-size: 15px; } .ds-primary:hover { transform: translateY(-1px); background: #24583f; box-shadow: 0 5px 12px rgb(23 62 50 / 16%); } .ds-primary:focus-visible { outline: 3px solid #d39928; outline-offset: 3px; }"
+    },
+    {
+      "name": "Outline button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action that stays quiet until needed.",
+      "html": "<button class=\"ds-outline\">Cancel</button>",
+      "css": ".ds-outline { min-height: 39px; padding: 0 14px; border: 1px solid #d7dfd1; border-radius: 5px; background: transparent; color: #173e32; font: 750 10px/1.4 'Segoe UI', sans-serif; cursor: pointer; transition: transform .16s ease, background .16s ease; } .ds-outline:hover { transform: translateY(-1px); background: #eaf0e3; } .ds-outline:focus-visible { outline: 3px solid #d39928; outline-offset: 3px; }"
+    },
+    {
+      "name": "Search input",
+      "kind": "input",
+      "description": "Ledger search field with a minimal rule.",
+      "html": "<label class=\"ds-search\"><span aria-hidden=\"true\">⌕</span><input type=\"search\" aria-label=\"Find an item\" placeholder=\"Find an item\"></label>",
+      "css": ".ds-search { display: flex; width: 170px; min-height: 35px; align-items: center; gap: 8px; padding: 0 9px; border-bottom: 1px solid #d9e0d3; color: #859183; font: 400 19px 'Segoe UI', sans-serif; } .ds-search input { width: 100%; border: 0; outline: 0; background: transparent; color: #24352b; font: 400 10px 'Segoe UI', sans-serif; } .ds-search:focus-within { outline: 3px solid #d39928; outline-offset: 2px; }"
+    },
+    {
+      "name": "Active navigation item",
+      "kind": "nav",
+      "description": "Current location within the pantry workspace.",
+      "html": "<button class=\"ds-nav\" aria-current=\"page\"><span aria-hidden=\"true\">◷</span> Expiry tracker</button>",
+      "css": ".ds-nav { display: flex; align-items: center; gap: 11px; padding: 12px 11px; border: 0; border-radius: 7px; background: #f1c75b; color: #12352b; font: 600 12px/1.4 'Segoe UI', sans-serif; } .ds-nav span { font-size: 20px; } .ds-nav:focus-visible { outline: 3px solid #d39928; outline-offset: 3px; }"
+    },
+    {
+      "name": "Expiry status chip",
+      "kind": "chip",
+      "description": "Written expiry timing paired with a supportive tint.",
+      "html": "<span class=\"ds-expiry\">Use tomorrow</span>",
+      "css": ".ds-expiry { display: inline-block; padding: 6px 8px; border-radius: 3px; background: #f8e4da; color: #9f492f; font: 750 9px/1.4 'Segoe UI', sans-serif; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Neighborhood Field Ledger",
+    "overview": "The system pairs the practical clarity of a pantry ledger with the lively marks of a local harvest board. A dark forest rail anchors a pale working field; yellow, leaf green, and tomato red make the high-priority actions and expiry states easy to scan. System sans-serif lettering keeps the work legible on a shared device or small kitchen screen.\n\nLists stay flat and readable, with slim rules and honest sample-data labels doing more work than ornamental containers. The North Carolina produce illustration gives the expiry page an authored, recognizably food-centered opening without implying a live photograph or verified partnership.",
+    "keyCharacteristics": [
+      "Forest-green navigation and harvest-yellow primary actions.",
+      "A date-first pantry ledger with plain-language expiry labels.",
+      "Compact crop illustrations and lightly ruled community boards.",
+      "Sample listings and local-only actions clearly identified as demonstrations."
+    ],
+    "rules": [
+      { "name": "The Named-Status Rule", "body": "Color reinforces the pantry state but never replaces its written label.", "section": "colors" },
+      { "name": "The Plain-Label Rule", "body": "Use sentence case for controls and human-readable dates; reserve uppercase labels for compact location and status metadata.", "section": "typography" }
+    ],
+    "dos": [
+      "Do keep expiry dates and next actions visible together.",
+      "Do label sample farms, pantry partners, destinations, and transactions as demo data.",
+      "Do show the chosen pickup or delivery destination before recording a claim.",
+      "Do make stock changes and notifications explicit local-demo events.",
+      "Do preserve keyboard focus and readable actions at every breakpoint."
+    ],
+    "donts": [
+      "Don't imply live availability, verified partners, confirmed pickups, food transfers, or measured impact.",
+      "Don't use gradients or decorative metric rings in place of actual pantry content.",
+      "Don't hide the expiry workflow behind a board or modal."
+    ]
+  }
+}

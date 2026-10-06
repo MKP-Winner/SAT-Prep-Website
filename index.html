@@ -1,182 +1,160 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Northstar SAT Prep</title>
-  <meta name="description" content="A focused digital SAT study dashboard.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@700;800&display=swap" rel="stylesheet">
+  <meta name="theme-color" content="#f5f7f1">
+  <meta name="description" content="A neighbor-powered pantry and food-sharing prototype for North Carolina.">
+  <title>FoodCycle NC — Fresh food, kept moving</title>
   <link rel="stylesheet" href="styles.css">
-  <style>
-    .answer-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .answer-grid button { min-width: 0; width: 100%; overflow-wrap: anywhere; word-break: break-word; }
-    .desmos-backdrop { align-items: stretch; justify-content: flex-end; background: transparent; pointer-events: none; padding: 0; }
-    .desmos-modal { max-width: none; width: 52vw; height: 100vh; min-width: 390px; min-height: 360px; border-radius: 20px 0 0 20px; padding: 27px; pointer-events: auto; box-shadow: -18px 0 50px rgba(0,0,0,.22); }
-    .desmos-modal.desmos-floating { position: fixed; margin: 0; }
-    .desmos-titlebar { display: flex; justify-content: flex-end; align-items: center; cursor: grab; user-select: none; touch-action: none; margin: -8px 0 5px; padding: 0; min-height: 24px; }
-    .desmos-titlebar:active { cursor: grabbing; }
-    .desmos-titlebar .modal-close { position: static; }
-    .desmos-frame { display: block; width: 100%; height: calc(100% - 30px); min-height: 220px; border: 0; border-radius: 12px; background: #fff; }
-    .desmos-edge-grip { position: absolute; left: -5px; top: 0; bottom: 0; width: 10px; cursor: ew-resize; }
-    .practice-actions { display: flex; gap: 5px; margin-left: auto; flex-wrap: wrap; justify-content: flex-end; }
-    .practice-actions button { font-size: 10px; padding: 8px 9px; }
-    .practice-actions .section-test { background: transparent; color: var(--accent); }
-    .desmos-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px; }
-    .calculator-button { margin-top: 12px; }
-    @media (max-width: 680px) { .desmos-modal { min-width: 0; width: 92vw; height: 100vh; } .desmos-frame { height: calc(100% - 45px); } }
-  </style>
 </head>
 <body>
+  <!--
+    THESIS: Make every expiring ingredient visible before it is forgotten; refuse the passive pantry dashboard.
+    OWN-WORLD: Field-guide greens, harvest gold, punched produce labels, and a ruled stock ledger with bold wayfinding.
+    STORY: Check what needs using, update home stock, then route surplus to a nearby pickup or pantry need.
+    FIRST VIEWPORT: A narrow pine rail frames the use-soon queue; the harvest headline and add-item action lead into dated inventory rows.
+    FORM: Operate; ranked pantry ledger with a large live expiry queue, tailored to local-first browser storage.
+  -->
   <div class="app-shell">
-    <aside class="sidebar">
-      <a class="brand" href="#dashboard" aria-label="Northstar SAT Prep home">
-        <span class="brand-mark">N</span>
-        <span><strong>Northstar</strong><small>SAT PREP STUDIO</small></span>
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#expiry" aria-label="FoodCycle NC home">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 40 40"><path d="M20 33c-8-5-11-12-7-19 2-4 6-5 9-3 4-3 10-1 11 5 1 7-5 14-13 17Z" fill="currentColor"/><path d="M20 32c0-8 3-14 9-18" fill="none" stroke="#173e32" stroke-width="2" stroke-linecap="round"/><path d="M10 15c-4-3-5-8-2-11 5 1 8 5 7 10" fill="#f5c95d"/></svg>
+        </span>
+        <span><strong>FoodCycle</strong><small>NORTH CAROLINA</small></span>
       </a>
+      <div class="workspace-tag"><span class="status-dot"></span> Demo workspace</div>
       <nav class="main-nav" aria-label="Main navigation">
-        <a class="nav-link active" href="#dashboard" data-view="dashboard"><span>⌂</span>Dashboard</a>
-        <a class="nav-link" href="#learn" data-view="learn"><span>◈</span>Learn & practice</a>
-        <a class="nav-link" href="#study" data-view="study"><span>✦</span>Study guide</a>
-        <a class="nav-link" href="#tests" data-view="tests"><span>▣</span>Practice tests</a>
-        <a class="nav-link" href="#notebook" data-view="notebook"><span>▧</span>Mistake notebook</a>
-        <a class="nav-link" href="#library" data-view="library"><span>▤</span>Resource library</a>
+        <button class="nav-link active" data-view="expiry" aria-current="page"><span class="nav-glyph">◷</span><span>Expiry tracker</span><span class="nav-count" id="navExpiryCount"></span></button>
+        <button class="nav-link" data-view="produce"><span class="nav-glyph">✳</span><span>Community produce</span><span class="nav-count">BETA</span></button>
+        <button class="nav-link" data-view="pantries"><span class="nav-glyph">⇄</span><span>Pantry network</span><span class="nav-count">BETA</span></button>
       </nav>
       <div class="sidebar-bottom">
-        <div class="streak-card">
-          <div class="streak-icon">✦</div>
-          <div><strong id="streakValue">3 day streak</strong><small>Keep your momentum</small></div>
+        <div class="side-note">
+          <span class="note-icon" aria-hidden="true">✳</span>
+          <p><strong>Good food goes further.</strong><br>Small neighborhood actions can make a big difference.</p>
         </div>
-        <button class="settings-link" id="themeToggle"><span id="themeIcon">☾</span><span id="themeLabel">Night mode</span></button>
-        <p class="sidebar-note">Your materials stay on this device.</p>
+        <button class="profile-button" type="button" aria-label="Current pantry: Oak City Community Pantry">
+          <span class="profile-avatar">OC</span><span><strong>Oak City Pantry</strong><small>Raleigh, NC</small></span><span class="profile-chevron" aria-hidden="true">⌄</span>
+        </button>
       </div>
     </aside>
 
     <main class="main-content">
       <header class="topbar">
-        <button class="mobile-menu" id="mobileMenu" aria-label="Open navigation">☰</button>
-        <div class="breadcrumb"><span>Workspace</span><b>/</b><span id="breadcrumbCurrent">Dashboard</span></div>
-        <div class="top-actions"><span class="date-label" id="todayLabel"></span><button class="avatar">MP</button></div>
+        <button class="mobile-menu" id="mobileMenu" aria-label="Open navigation" aria-expanded="false">☰</button>
+        <div class="crumb"><span>FoodCycle NC</span><span aria-hidden="true">/</span><strong id="breadcrumbCurrent">Expiry tracker</strong></div>
+        <div class="topbar-right"><span class="local-badge"><span></span> Saved on this device</span><button class="today-label" id="todayLabel"></button></div>
       </header>
 
-      <section class="view active-view" id="dashboardView">
-        <div class="hero">
-          <div>
-            <span class="eyebrow">TUESDAY, SEPTEMBER 8</span>
-            <h1>Small steps.<br><em>Big score.</em></h1>
-            <p>Build your confidence one focused session at a time. You’re closer than you think.</p>
-            <button class="primary-button" data-go="learn">Continue learning <span>→</span></button>
+      <section class="view active-view" id="expiryView" aria-labelledby="expiryTitle">
+        <div class="welcome-row">
+          <div class="welcome-copy">
+            <p class="location-line"><span aria-hidden="true">⌖</span> RALEIGH, NORTH CAROLINA <span class="location-separator">·</span> <span id="longDate"></span></p>
+            <h1 id="expiryTitle">Fresh food,<br><span>on your watch.</span></h1>
+            <p class="welcome-description">A quick look at what’s in your pantry and what could use a little love next.</p>
+            <button class="button button-primary" data-action="add-item"><span aria-hidden="true">＋</span> Add pantry item</button>
           </div>
-          <div class="hero-orbit" aria-hidden="true"><div class="orbit-ring"></div><div class="orbit-core">SAT<br><small>2026</small></div><span class="orbit-dot dot-one"></span><span class="orbit-dot dot-two"></span></div>
-        </div>
-        <div class="stats-grid">
-          <div class="stat-card"><span class="stat-label">STUDY TIME</span><strong id="studyTimeValue">0<span>m</span></strong><div class="progress-bar"><i id="studyTimeProgress"></i></div><small id="studyTimeSummary">Goal: 300m this week</small></div>
-          <div class="stat-card"><div class="question-heading"><span class="stat-label">QUESTIONS ANSWERED</span><button class="edit-score" id="editQuestionTotal">Edit</button></div><strong id="questionsAnswered">0</strong><div class="mini-bars" id="questionBars"></div><small id="questionsGoalSummary">Goal: 200 this week</small></div>
-          <div class="stat-card score-card"><div class="score-heading"><span class="stat-label">EST. SCORE</span><button class="edit-score" id="editScore" aria-label="Edit SAT scores">Edit</button></div><strong id="currentScoreValue">1240</strong><span class="score-up" id="scoreGap">Goal: 1400</span><div class="score-line"><i id="scoreProgress"></i></div><small id="scoreSummary">160 points to your goal</small></div>
-        </div>
-        <div class="dashboard-columns">
-          <div class="panel today-panel"><div class="panel-heading"><div><span class="eyebrow">UP NEXT</span><h2>Today’s focus</h2></div><button class="text-button" data-go="learn">View plan →</button></div><div class="focus-list"><button class="focus-item" data-open-topic="Algebra"><span class="focus-icon math-icon">∑</span><span><strong>Algebra warm-up</strong><small>8 questions · Easy</small></span><span class="focus-status">Start <b>→</b></span></button><button class="focus-item" data-open-topic="Craft and Structure"><span class="focus-icon reading-icon">Aa</span><span><strong>Words in context</strong><small>10 questions · Medium</small></span><span class="focus-status">Start <b>→</b></span></button><button class="focus-item" data-open-topic="Standard English Conventions"><span class="focus-icon writing-icon">✎</span><span><strong>Grammar patterns</strong><small>12 questions · Hard</small></span><span class="focus-status">Start <b>→</b></span></button></div></div>
-          <div class="panel activity-panel"><div class="panel-heading"><div><span class="eyebrow">YOUR WEEK</span><h2>Study activity</h2><span class="activity-week-label" id="activityWeekLabel"></span></div><div class="activity-heading-actions"><div class="activity-week-nav" aria-label="Study activity week navigation"><button class="week-arrow" id="previousActivityWeek" aria-label="View previous week">←</button><button class="week-arrow" id="nextActivityWeek" aria-label="View next week">→</button></div><span class="activity-total" id="activityTotal">0m</span><button class="text-button" id="editGoals">Set goals</button></div></div><div class="activity-chart"><div class="chart-y"><span>60m</span><span>45m</span><span>30m</span><span>15m</span><span>0</span></div><div class="chart-main"><div class="chart-grid"></div><div class="chart-bars" id="activityBars"></div></div></div><div class="chart-days" id="activityDays"></div></div>
-        </div>
-        <div class="quote-strip" aria-label="Daily motivation">
-          <span aria-hidden="true">“</span>
-          <div class="quote-content">
-            <p id="quoteText" aria-live="polite">Don’t study until you get it right. Study until you can’t get it wrong.</p>
-            <small id="quoteAuthor">— Your future self</small>
-            <a class="quote-attribution" href="https://zenquotes.io/" target="_blank" rel="noopener noreferrer">Quotes by ZenQuotes</a>
+          <div class="harvest-illustration" aria-label="Illustration of vegetables ready for a meal" role="img">
+            <div class="sun-stamp">GROWN<br>TOGETHER</div>
+            <svg class="produce-art" viewBox="0 0 360 245" aria-hidden="true">
+              <path d="M85 191c-21-29-19-72 4-102 27-36 76-46 114-26 33 17 48 58 34 94-13 36-42 59-88 63-29 2-51-8-64-29Z" fill="#e66e4d"/>
+              <path d="M169 64c-11-22-9-39 8-53 18 14 21 30 11 51M174 65c5-25 21-37 46-35-4 21-19 34-43 40" fill="#2b7053"/>
+              <path d="M198 207c-12-34-1-76 28-94 26-16 54-1 63 31 8 29-7 63-34 77-19 10-44 5-57-14Z" fill="#e5ac39"/>
+              <path d="M229 119c-1-17 6-31 20-41 11 16 10 29-1 42M239 119c9-16 23-22 40-17-7 15-19 22-36 21" fill="#55824e"/>
+              <path d="M91 167c-24-17-33-38-25-63 26-4 44 8 53 35 5-24 21-39 47-43 7 29-5 51-35 66-16 8-29 10-40 5Z" fill="#659552"/>
+              <path d="M92 168c19-20 40-36 67-49" fill="none" stroke="#d2dc8c" stroke-width="3" stroke-linecap="round"/>
+              <circle cx="115" cy="148" r="5" fill="#f39a6e"/><circle cx="144" cy="124" r="4" fill="#f39a6e"/>
+              <path d="M132 200c31-3 59-1 82 7" fill="none" stroke="#b94e36" stroke-width="3" opacity=".45"/>
+              <circle cx="308" cy="67" r="3" fill="#e66e4d"/><circle cx="51" cy="87" r="4" fill="#dca634"/>
+            </svg>
+            <span class="art-caption">A little planning, a lot less waste.</span>
           </div>
-          <button class="text-button quote-refresh" id="quoteRefresh" type="button" aria-label="Show another motivational quote">New quote <span aria-hidden="true">↻</span></button>
         </div>
+
+        <div class="overview-strip" aria-label="Pantry summary">
+          <div class="overview-cell"><span class="summary-icon soon-icon">◷</span><span class="summary-label">USE SOON</span><strong id="soonCount">0 items</strong></div>
+          <span class="overview-rule" aria-hidden="true"></span>
+          <div class="overview-cell"><span class="summary-icon pantry-icon">▤</span><span class="summary-label">IN YOUR PANTRY</span><strong id="pantryCount">0 items</strong></div>
+          <span class="overview-rule" aria-hidden="true"></span>
+          <div class="overview-cell"><span class="summary-icon shared-icon">↗</span><span class="summary-label">SHARING ACTIONS</span><strong id="sharedCount">0 actions</strong></div>
+          <span class="overview-promise"><span aria-hidden="true">✳</span> Every item has another chance.</span>
+        </div>
+
+        <div class="section-heading tracker-heading">
+          <div><h2>What needs using?</h2></div>
+          <div class="tracker-tools"><label class="search-field"><span aria-hidden="true">⌕</span><input type="search" id="itemSearch" placeholder="Find an item" aria-label="Search pantry items"></label><button class="button button-outline" data-action="add-item"><span aria-hidden="true">＋</span> Add item</button></div>
+        </div>
+        <div class="tracker-tabs" role="group" aria-label="Filter pantry items">
+          <button class="filter-tab active" data-filter="all">All items <span id="filterAllCount">0</span></button>
+          <button class="filter-tab" data-filter="soon">Use soon <span id="filterSoonCount">0</span></button>
+          <button class="filter-tab" data-filter="fresh">Looking good</button>
+        </div>
+        <div class="inventory-table" id="inventoryList" aria-live="polite"></div>
+        <div class="empty-filter" id="emptyFilter" hidden><span aria-hidden="true">✳</span><strong>Nothing on this shelf.</strong><p>Try another filter or add a pantry item to get started.</p><button class="button button-outline" data-action="add-item">Add an item</button></div>
+        <div class="demo-disclaimer"><span aria-hidden="true">ⓘ</span><p><strong>Sample data for demonstration.</strong> These pantry items are examples. Add or update stock to reflect your own pantry.</p></div>
       </section>
 
-      <section class="view" id="learnView">
-        <div class="section-intro"><div><span class="eyebrow">LEARN & PRACTICE</span><h1>Choose your arena.</h1><p>Study a concept, then put it into practice with materials from your SAT Prep collection.</p></div><button class="secondary-button" id="openTimer">⏱ Quick timer</button></div>
-        <div class="subject-tabs" role="tablist"><button type="button" class="subject-tab selected" data-subject="all">All subjects</button><button type="button" class="subject-tab" data-subject="math">Math <span>4</span></button><button type="button" class="subject-tab" data-subject="reading">Reading <span>2</span></button><button type="button" class="subject-tab" data-subject="writing">Writing <span>2</span></button></div>
-        <div class="topic-grid" id="topicGrid"></div>
+      <section class="view" id="produceView" aria-labelledby="produceTitle" hidden>
+        <div class="board-header produce-header">
+          <div><p class="location-line">NEIGHBORHOOD HARVEST BOARD <span class="beta-pill">BETA DEMO</span></p><h1 id="produceTitle">Good things<br><span>growing nearby.</span></h1><p class="welcome-description">Claim a local harvest, choose a pickup spot, and help fresh food find a table.</p></div>
+          <div class="board-stat"><span>SHARED AROUND THE TRIANGLE</span><strong id="produceAvailable">0 crates</strong><small>Illustrative listings · no live availability</small></div>
+        </div>
+        <div class="board-toolbar"><div><h2>Fresh from our neighbors</h2><p>Fictional sample listings around the Triangle area.</p></div><label class="select-wrap"><span>Area</span><select id="produceArea" aria-label="Filter listings by area"><option value="all">All nearby</option><option value="raleigh">Raleigh & Wake County</option><option value="durham">Durham</option><option value="other">Elsewhere in NC</option></select></label></div>
+        <div class="produce-grid" id="produceList"></div>
+        <div class="destination-band"><div class="destination-icon" aria-hidden="true">⌖</div><div><strong>A good place to land.</strong><p>Community fridge, food pantry, neighborhood table—choose a destination for each claimed harvest.</p></div><span>Destinations are demo locations</span></div>
+        <div class="demo-disclaimer"><span aria-hidden="true">ⓘ</span><p><strong>Beta demo board.</strong> Growers, pickup windows, quantities, and destinations are illustrative North Carolina sample data. Claims stay in this browser; no grower is contacted.</p></div>
       </section>
 
-      <section class="view" id="studyView">
-        <div class="section-intro"><div><span class="eyebrow">CONCEPT LESSONS</span><h1>Learn it. See it. Use it.</h1><p>Topic-by-topic lessons built from the notes, worksheets, answer keys, guides, and textbooks in your SAT Prep folder.</p></div><button class="secondary-button" data-go="library">Browse sources →</button></div>
-        <div class="study-summary"><div><span class="study-summary-icon">✦</span><div><strong>How to use this guide</strong><p>Read the idea, follow the worked example, then open a practice set in Learn & practice.</p></div></div><span class="resource-count">8 guided lessons</span></div>
-        <div class="lesson-filters"><button class="lesson-filter selected" data-lesson-filter="all">All lessons</button><button class="lesson-filter" data-lesson-filter="math">Math</button><button class="lesson-filter" data-lesson-filter="reading">Reading</button><button class="lesson-filter" data-lesson-filter="writing">Writing</button></div>
-        <div id="lessonGrid" class="lesson-grid"></div>
+      <section class="view" id="pantriesView" aria-labelledby="pantriesTitle" hidden>
+        <div class="board-header pantry-header">
+          <div><p class="location-line">PANTRY-TO-PANTRY EXCHANGE <span class="beta-pill">BETA DEMO</span></p><h1 id="pantriesTitle">Stock moves<br><span>when neighbors do.</span></h1><p class="welcome-description">Match a nearby pantry’s needs with surplus already on a neighbor’s shelf.</p></div>
+          <div class="board-stat"><span>COMMUNITY PANTRIES</span><strong>4 nearby</strong><small>Fictional NC partners for this demo</small></div>
+        </div>
+        <div class="network-summary"><div><span class="network-mark">↗</span><div><strong id="needsOpenCount">0 open needs</strong><p>A small transfer can fill a real gap.</p></div></div><div class="network-legend"><span class="legend-stock">Available stock</span><span class="legend-need">Requested items</span></div></div>
+        <div class="pantry-board" id="pantryBoard"></div>
+        <div class="activity-panel"><div class="section-heading"><div><h2>Community activity</h2></div><span class="activity-count" id="activityCount">0 updates</span></div><div class="activity-list" id="activityList"></div></div>
+        <div class="demo-disclaimer"><span aria-hidden="true">ⓘ</span><p><strong>Beta demo board.</strong> Pantry names, stock, needs, and recipient notifications are illustrative. A transfer or notification here is only recorded locally and does not contact another organization.</p></div>
       </section>
 
-      <section class="view" id="testsView">
-        <div class="practice-heading"><div><h1>Practice tests</h1><p><b>Digital SAT</b><span>•</span>4 modules, 2h 14m<span>•</span><span id="practiceTakenSummary">0 of 11 taken</span></p></div></div>
-        <div class="practice-summary-grid">
-          <div class="practice-summary-card summary-best"><span>Best score</span><strong id="bestPracticeScore">—</strong><small>of 1,600</small></div>
-          <div class="practice-summary-card summary-projected"><span class="summary-icon">◎</span><strong id="projectedPracticeScore">—</strong><b>Projected</b><small>Based on your current score</small></div>
-          <div class="practice-summary-card summary-taken"><span class="summary-icon">✓</span><strong id="takenPracticeCount">0</strong><b>Taken</b><small>This month</small></div>
-        </div>
-        <div class="practice-toolbar"><div class="practice-tabs"><button class="practice-tab selected" data-practice-filter="all">All</button><button class="practice-tab" data-practice-filter="not-started">Not started</button><button class="practice-tab" data-practice-filter="taken">Taken</button></div><span>Pick a test to set your timing before the clock starts</span></div>
-        <div class="panel test-papers"><div class="panel-heading"><div><span class="eyebrow">YOUR COLLECTION</span><h2>11 practice papers</h2></div><button class="primary-button" id="startTest">Start full test <span>→</span></button></div><div id="practiceList" class="practice-list"></div></div>
-      </section>
-
-      <section class="view" id="notebookView" aria-labelledby="notebookTitle">
-        <div class="section-intro"><div><span class="eyebrow">REVIEW & REMEMBER</span><h1 id="notebookTitle">Mistake notebook.</h1><p>Turn missed and skipped questions into focused reviews. Your notebook stays on this device.</p></div><a class="secondary-button notebook-test-link" href="#tests" data-go="tests">Practice a test →</a></div>
-        <p class="notebook-status" id="notebookStatus" role="status" aria-live="polite" hidden></p>
-        <div class="notebook-stats">
-          <div class="notebook-stat"><span class="stat-label">IN YOUR NOTEBOOK</span><strong id="notebookTotal">0</strong><small>Questions saved</small></div>
-          <div class="notebook-stat"><span class="stat-label">DUE TO REVIEW</span><strong id="notebookDueCount">0</strong><small>Ready for another look</small></div>
-          <div class="notebook-stat"><span class="stat-label">MASTERED</span><strong id="notebookMasteredCount">0</strong><small>Questions you’ve mastered</small></div>
-          <div class="notebook-stat"><span class="stat-label">REVIEWS COMPLETED</span><strong id="notebookReviewCount">0</strong><small>Spaced practice sessions</small></div>
-        </div>
-        <div class="notebook-tools">
-          <label class="search-box">⌕<input id="notebookSearch" type="search" placeholder="Search questions, answers, or topics..." aria-label="Search notebook"></label>
-          <label class="notebook-select-label">Subject
-            <select id="notebookSubjectFilter" aria-label="Filter notebook by subject"><option value="all">All subjects</option><option value="math">Math</option><option value="reading">Reading</option><option value="writing">Writing</option></select>
-          </label>
-          <label class="notebook-select-label">Status
-            <select id="notebookStatusFilter" aria-label="Filter notebook by status"><option value="all">All questions</option><option value="due">Due for review</option><option value="active">Not mastered</option><option value="mastered">Mastered</option></select>
-          </label>
-          <label class="notebook-tag-filter">Tag
-            <input id="notebookTagFilter" type="search" placeholder="Filter by tag..." aria-label="Filter notebook by tag">
-          </label>
-        </div>
-        <div class="panel notebook-queue-panel">
-          <div class="panel-heading"><div><span class="eyebrow">SPACED REPETITION</span><h2>Due review queue</h2></div><span class="notebook-queue-count" id="notebookQueueLabel">0 due</span></div>
-          <div class="notebook-card-list" id="notebookDueQueue"></div>
-        </div>
-        <div class="panel notebook-list-panel">
-          <div class="panel-heading"><div><span class="eyebrow">YOUR COLLECTION</span><h2>All notebook questions</h2></div><span class="notebook-queue-count" id="notebookFilteredCount">0 questions</span></div>
-          <div class="notebook-card-list" id="notebookCards"></div>
-        </div>
-        <details class="panel notebook-add-panel">
-          <summary>Add a question manually</summary>
-          <p class="modal-lead">Save a question from your own study session, with the answer and explanation you want to review.</p>
-          <form id="notebookAddForm" class="notebook-add-form">
-            <label>Question<textarea name="question" required maxlength="2000" rows="3"></textarea></label>
-            <div class="notebook-form-row">
-              <label>Subject<select name="subject" required><option value="math">Math</option><option value="reading">Reading</option><option value="writing">Writing</option></select></label>
-              <label>Topic<input name="topic" required maxlength="120"></label>
-            </div>
-            <div class="notebook-form-row">
-              <label>Your answer<textarea name="userAnswer" maxlength="500" rows="2"></textarea></label>
-              <label>Correct answer<textarea name="correctAnswer" required maxlength="500" rows="2"></textarea></label>
-            </div>
-            <label>Explanation<textarea name="explanation" maxlength="2000" rows="3"></textarea></label>
-            <label>Tags <span class="notebook-label-hint">comma-separated</span><input name="tags" maxlength="300" placeholder="e.g. fractions, equations"></label>
-            <button class="primary-button" type="submit">Save question <span>→</span></button>
-          </form>
-        </details>
-      </section>
-
-      <section class="view" id="libraryView">
-        <div class="section-intro"><div><span class="eyebrow">RESOURCE LIBRARY</span><h1>Everything in one place.</h1><p>Browse the complete SAT Prep folder: worksheets, answer keys, guides, slides, and practice papers.</p></div><div class="library-count"><strong id="libraryCount">0</strong><span>files indexed</span></div></div>
-        <div class="library-tools"><label class="search-box">⌕<input id="librarySearch" placeholder="Search your materials..." type="search"></label><select id="librarySubject"><option value="all">All subjects</option><option value="math">Math</option><option value="reading">Reading</option><option value="writing">Writing</option><option value="resources">General resources</option></select><select id="libraryFilter"><option value="all">All material types</option><option value="worksheet">Student worksheets</option><option value="answer">Answer keys</option><option value="guide">Guides & resources</option><option value="practice">Practice papers</option></select></div>
-        <div id="libraryList" class="library-list"></div>
-      </section>
+      <footer class="page-footer"><span>FoodCycle NC <span aria-hidden="true">✳</span></span><span>A community food-sharing prototype · Demo data is illustrative</span></footer>
     </main>
   </div>
 
-  <div class="modal-backdrop" id="topicModal" aria-hidden="true"><div class="modal topic-modal"><button class="modal-close" data-close>×</button><div id="topicModalContent"></div></div></div>
-  <div class="modal-backdrop" id="timerModal" aria-hidden="true"><div class="modal timer-modal"><button class="modal-close" data-close>×</button><span class="eyebrow">FOCUS TIMER</span><h2>Make this block count.</h2><div class="timer-display" id="timerDisplay">25:00</div><div class="timer-controls"><button class="secondary-button" id="timerReset">Reset</button><button class="primary-button" id="timerStart">Start timer</button></div></div></div>
-  <div class="modal-backdrop" id="scoreModal" aria-hidden="true"><div class="modal score-modal"><button class="modal-close" data-close>×</button><span class="eyebrow">SCORE TARGETS</span><h2>Set your SAT targets.</h2><p class="modal-lead">Keep your latest score and target score up to date. SAT scores range from 400 to 1600.</p><div class="score-fields"><label>Current SAT score<input id="currentScoreInput" type="number" min="400" max="1600" step="10"></label><label>Goal SAT score<input id="goalScoreInput" type="number" min="400" max="1600" step="10"></label></div><p class="score-error" id="scoreError"></p><button class="primary-button" id="saveScores">Save score targets <span>→</span></button></div></div>
-  <div class="modal-backdrop" id="goalsModal" aria-hidden="true"><div class="modal goals-modal"><button class="modal-close" data-close>×</button><span class="eyebrow">WEEKLY TARGETS</span><h2>Set your study goals.</h2><p class="modal-lead">Goals change your targets only. Activity is tracked automatically from practice, timed tests, and the focus timer.</p><div class="score-fields"><label>Study minutes goal<input id="studyGoalInput" type="number" min="1" max="10080" step="5"></label><label>Questions goal<input id="questionGoalInput" type="number" min="1" max="10000" step="10"></label></div><div class="goal-adjustment"><strong>Adjust this week’s answered total</strong><p>Use this only to correct a missed or imported total. New answers will continue adding to it automatically.</p><label>Current answered total<input id="questionTotalInput" type="number" min="0" max="100000" step="1"></label></div><p class="score-error" id="goalsError"></p><button class="primary-button" id="saveGoals">Save goals and total <span>→</span></button></div></div>
-  <div class="modal-backdrop" id="testModal" aria-hidden="true"><div class="modal test-modal"><button class="modal-close" data-close>×</button><div id="testModalContent"></div></div></div>
-  <div class="modal-backdrop desmos-backdrop" id="desmosModal" aria-hidden="true"><div class="modal desmos-modal" id="desmosWindow"><span class="desmos-edge-grip" id="desmosResizeHandle" aria-label="Resize Desmos panel"></span><div class="desmos-titlebar" id="desmosDragHandle"><button class="modal-close" data-close aria-label="Close Desmos">×</button></div><iframe class="desmos-frame" title="Desmos Graphing Calculator" src="https://www.desmos.com/calculator?lang=en"></iframe></div></div>
-  <script src="materials.js"></script><script src="questions.js"></script><script src="practice-tests.js"></script><script src="mistake-notebook.js"></script><script src="app.js"></script>
+  <dialog class="app-dialog" id="itemDialog" aria-labelledby="itemDialogTitle">
+    <form id="itemForm" method="dialog">
+      <div class="dialog-heading"><div><h2 id="itemDialogTitle">Add pantry item</h2><p>Keep a simple eye on what you have and when it’s best used.</p></div><button class="icon-button" type="button" data-close-dialog aria-label="Close dialog">×</button></div>
+      <label class="form-field">Food name<input name="name" required maxlength="48" placeholder="e.g. Sweet potatoes" autocomplete="off"></label>
+      <div class="form-row"><label class="form-field">Quantity<input name="quantity" type="number" min="0.25" max="999" step="0.25" value="1" required></label><label class="form-field">Unit<select name="unit"><option>items</option><option>lb</option><option>oz</option><option>bags</option><option>jars</option><option>cans</option><option>bunches</option><option>crates</option></select></label></div>
+      <div class="form-row"><label class="form-field">Best by<input name="bestBy" type="date" required></label><label class="form-field">Storage<select name="storage"><option>Fridge</option><option>Pantry</option><option>Freezer</option></select></label></div>
+      <p class="form-error" id="itemFormError" role="alert"></p>
+      <div class="dialog-actions"><button class="button button-outline" type="button" data-close-dialog>Cancel</button><button class="button button-primary" type="submit">Save pantry item <span aria-hidden="true">→</span></button></div>
+    </form>
+  </dialog>
+
+  <dialog class="app-dialog compact-dialog" id="claimDialog" aria-labelledby="claimDialogTitle">
+    <form id="claimForm" method="dialog">
+      <div class="dialog-heading"><div><h2 id="claimDialogTitle">Claim this harvest</h2><p id="claimDescription"></p></div><button class="icon-button" type="button" data-close-dialog aria-label="Close dialog">×</button></div>
+      <input type="hidden" name="listingId">
+      <label class="form-field">Crates to claim<input type="number" name="crates" min="1" value="1" required></label>
+      <label class="form-field">Choose a destination<select name="destination" required id="claimDestination"></select></label>
+      <div class="dialog-actions"><button class="button button-outline" type="button" data-close-dialog>Not right now</button><button class="button button-primary" type="submit">Save demo claim <span aria-hidden="true">→</span></button></div>
+    </form>
+  </dialog>
+
+  <dialog class="app-dialog compact-dialog" id="transferDialog" aria-labelledby="transferDialogTitle">
+    <form id="transferForm" method="dialog">
+      <div class="dialog-heading"><div><h2 id="transferDialogTitle">Offer a stock transfer</h2><p id="transferDescription"></p></div><button class="icon-button" type="button" data-close-dialog aria-label="Close dialog">×</button></div>
+      <input type="hidden" name="pantryId">
+      <input type="hidden" name="needId">
+      <label class="form-field">Food to offer<select name="food" id="transferFood"></select></label>
+      <label class="form-field">Quantity<input type="number" name="quantity" min="1" value="1" required></label>
+      <div class="dialog-actions"><button class="button button-outline" type="button" data-close-dialog>Cancel</button><button class="button button-primary" type="submit">Record demo transfer <span aria-hidden="true">→</span></button></div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="foodcycle.js"></script>
 </body>
 </html>
